@@ -13,5 +13,5 @@ OpenSSL: I recommend https://slproweb.com/products/Win32OpenSSL.html
 ## Compiling on Linux/Unix
 
 1. Install dependencies, cmake, git, protoc (profobuf compiler), and core GNU C/C++ compiler/tools (build-essential on Debian systems). You can find most deps by looking in your distro at https://wiki.shoutirc.com/index.php/Installation - you will need the corresponding -dev/-devel packages of course.<br />
-2. cd to v5 folder, run cmake . (Note: out of source tree builds not supported at this time)<br />
-3. make -j<however many CPU cores you have><br />
+2. cd to v5 folder, run: cmake . (Note: out of source tree builds not supported at this time)<br />
+3. make -j&lt;however many CPU cores you have&gt;<br />
