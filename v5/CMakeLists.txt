@@ -45,8 +45,11 @@ SET(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
 
 SET(LIBS ${LIBS} pthread mysqlclient)
 
-include_directories(/usr/include/drift /usr/local/include)
+include_directories(/usr/local/include)
 link_directories(/usr/local/lib ~/ircbot/Common/obj)
+SET(DSL_DIRECTORY ${PROJECT_BINARY_DIR}/../Common/DSL/dslsrc)
+include_directories(${DSL_DIRECTORY})
+
 
 SET(DSL_SHARED 0)
 add_definitions(-fPIC -DIB_PIC)
@@ -142,21 +145,11 @@ execute_process(COMMAND bash ./gen_distro)
 SET(LIBS ibdsl ${LIBS})
 
 add_subdirectory (../add_checksum ../add_checksum)
-add_subdirectory (../add_sig ../add_sig)
 
 add_subdirectory (../Common/libremote ../Common/libremote)
 add_subdirectory (../ibctl ../ibctl)
 add_subdirectory (../mp3sync ../mp3sync)
 add_subdirectory (../editusers ../editusers)
-#add_subdirectory (../pkgscan ../pkgscan)
-add_subdirectory (../RAAP ../RAAP)
-#add_subdirectory (../signfile ../signfile)
-add_subdirectory (../InfoMaker ../InfoMaker)
-add_subdirectory (../InfoDiff ../InfoDiff)
-add_subdirectory (../libupdater ../libupdater)
-add_subdirectory (../Updater5 ../Updater5)
-#add_subdirectory (../Updater5_AutoDJ ../Updater5_AutoDJ)
-add_subdirectory (../PackageManager ../PackageManager)
 
 add_subdirectory (Plugins)
 
@@ -165,11 +158,5 @@ execute_process(COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Commo
 execute_process(COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/autodj.proto)
 
 add_subdirectory (src)
-#add_subdirectory (IRCBot5_Standalone)
-#add_subdirectory (IRCBot5_Curses)
-#add_subdirectory (IRCBot5_Lite)
 
 add_subdirectory (../Client3 ../Client3)
-
-#execute_process(COMMAND ./Output/add_checksum ./Output/plugins/*)
-##add_custom_target(signer ALL ]
