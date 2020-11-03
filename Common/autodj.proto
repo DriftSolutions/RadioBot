@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+message pbTITLE_DATA {
+	required string title = 1;
+	optional string artist = 2;
+	optional string album = 3;
+	optional string album_artist = 4;
+	optional string genre = 5;
+	optional string url = 6;
+	optional string comment = 7;
+	optional uint32 track_no = 8;
+	optional uint32 year = 9;
+};
+
+message pbREQ_INFO {
+	required int32 netno = 1;
+	required string channel = 2;
+	required string nick = 3;
+	optional int64 playAfter = 4;
+};
+
+message pbQUEUE {
+	required uint32 ID = 1;
+	required string fn = 2;
+	required string path = 3;
+	
+	optional int64 mTime = 4;
+	optional int64 LastPlayed = 5;
+	optional uint32 songlen = 6;
+	optional int32 req_count = 7;
+	optional uint32 flags = 8;
+	optional pbTITLE_DATA meta = 9;
+	optional pbREQ_INFO isreq = 10;
+};
+
+message pbQUEUE_LIST {
+	repeated pbQUEUE list = 1;
+}

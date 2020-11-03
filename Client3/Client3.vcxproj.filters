@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Debug">
+      <UniqueIdentifier>{398e5ddd-d72c-4d77-adff-894142a739e7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="about.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="builtin_xml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="connmgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="libdebug.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="options.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="libdebug.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\v3\ca.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\std.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\folder1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\folder2.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\file1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\computer.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\drive.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\cdrom.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\floppy.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\removble.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\hand.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\bullseye.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\pencil.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\magnif1.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\roller.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\pbrush.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\pntleft.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\pntright.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\blank.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\rightarr.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\cross.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\csquery.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wx\msw\colours.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="incoming_req.wav">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="client3.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

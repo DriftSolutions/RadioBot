@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pop.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="sms.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="send.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{cbf51855-2d77-4f8f-9cd0-b9885357627c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{b513440f-936e-4539-8d09-1db83836d651}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sms.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sms_interface.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

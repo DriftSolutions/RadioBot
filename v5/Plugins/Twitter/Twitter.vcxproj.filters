@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="twitter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\base64.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\HMAC_SHA1.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\oauthlib.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\SHA1.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\twitcurl.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twitcurl\urlencode.cpp">
+      <Filter>Twitter Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="twittimeline.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Twitter Lib">
+      <UniqueIdentifier>{f4bc806a-04ec-47dd-be8b-788c4819751e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{263d5081-824a-42e0-a153-f8257543ebc7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="twitter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\base64.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\HMAC_SHA1.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\oauthlib.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\SHA1.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\twitcurl.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="twitcurl\urlencode.h">
+      <Filter>Twitter Lib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+message RemoteFindQuery {
+	required uint32 search_id = 1;
+	required string query = 2;
+};
+
+message RemoteFindResultEntry {
+	required string file = 1;
+	optional uint32 file_id = 2;
+};
+
+message RemoteFindResult {
+	required uint32 search_id = 1;
+	repeated RemoteFindResultEntry files = 2;
+};

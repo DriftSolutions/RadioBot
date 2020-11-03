@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Feeders">
+      <UniqueIdentifier>{16396b49-293a-4ab5-8dbd-f04602eeaa3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Readers">
+      <UniqueIdentifier>{aca6f1fb-c463-40d3-965e-a978c37a3d5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Resampler">
+      <UniqueIdentifier>{8f6d3a41-a84b-4f57-b09a-fd93f42da6d4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="autodj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="deck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mixer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="playback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="resampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="timing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_icecast.cpp">
+      <Filter>Feeders</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_shoutcast.cpp">
+      <Filter>Feeders</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_streamerp2p.cpp">
+      <Filter>Feeders</Filter>
+    </ClCompile>
+    <ClCompile Include="read_file.cpp">
+      <Filter>Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="read_stream.cpp">
+      <Filter>Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="resample\resample.c">
+      <Filter>Resampler</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_steamcast.cpp">
+      <Filter>Feeders</Filter>
+    </ClCompile>
+    <ClCompile Include="ss_ultravox.cpp">
+      <Filter>Feeders</Filter>
+    </ClCompile>
+    <ClCompile Include="title_updates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="req_iface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="promos.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="youtube-dl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Common\autodj.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="adj_plugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="autodj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ss_icecast.h">
+      <Filter>Feeders</Filter>
+    </ClInclude>
+    <ClInclude Include="ss_shoutcast.h">
+      <Filter>Feeders</Filter>
+    </ClInclude>
+    <ClInclude Include="ss_streamerp2p.h">
+      <Filter>Feeders</Filter>
+    </ClInclude>
+    <ClInclude Include="read_file.h">
+      <Filter>Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="read_stream.h">
+      <Filter>Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="resample\arch.h">
+      <Filter>Resampler</Filter>
+    </ClInclude>
+    <ClInclude Include="resample\fixed_generic.h">
+      <Filter>Resampler</Filter>
+    </ClInclude>
+    <ClInclude Include="resample\resample.h">
+      <Filter>Resampler</Filter>
+    </ClInclude>
+    <ClInclude Include="ss_steamcast.h">
+      <Filter>Feeders</Filter>
+    </ClInclude>
+    <ClInclude Include="ss_ultravox.h">
+      <Filter>Feeders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="autodj.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ca.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\v3\ca.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\Output\iconsrc\control_play_blue.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\output\iconsrc\icon2.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

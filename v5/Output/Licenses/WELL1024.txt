@@ -1,0 +1,24 @@
+WELL1024
+========
+A simple random number generator for C/C++ programs. It's based on the WELL1024 generator, which is about as fast as the MT (Mersenne Twister) and boasts a better equidistribution. In short, it's better for scientific computing. As of version 1.0 the generator is faster than Agner Fog's MT, not as fast as Matsumoto-sensei's MT (however you can't create multiple instances of the generator for the latter), and just a tiny bit faster than the Mersenne twister in gsl (but of course they have many more functions). See example1-gsl.c to compare well1024 and gsl.
+
+As the name implies, the generator has a period of 2^1024. Doesn't seem much ? Well, 2^1024 = 179 769 313 486 231 590 772 930 519 078 902 473 361 797 697 894 230 657 273 430 081 157 732 675 805 500 963 132 708 477 322 407 536 021 120 113 879 871 393 357 658 789 768 814 416 622 492 847 430 639 474 124 377 767 893 424 865 485 276 302 219 601 246 094 119 453 082 952 085 005 768 838 150 682 342 462 881 473 913 110 540 827 237 163 350 510 684 586 298 239 947 245 938 479 716 304 835 356 329 624 224 137 216.
+
+Everything should work fine on UNIX-like operating systems (i.e.: Linux, Solaris, FreeBSD, MacOSX...), and it should also work fine on MS Windows except for the call to the dev/random (which is just *one* way to seed the generator).
+
+There is a Java implementation by the generator's author (SSJ: http://www.iro.umontreal.ca/~simardr/ssj/indexe.html) and I used it to test my implementation.
+
+All tests were made on Linux x86_64 with four compilers: gcc, pathcc, icc, and clang.
+
+Author
+------
+Philippe Desjardins-Proulx (phdp.huginn.info) <philippe.d.proulx@gmail.com>
+[ShoutIRC.com Note] Website: https://github.com/PhDP/well1024
+
+Language
+--------
+C++-compatible ANSI C.
+
+License
+-------
+MIT <http://www.opensource.org/licenses/mit-license.php>

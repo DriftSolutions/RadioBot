@@ -1,0 +1,9 @@
+SET(THIS_EXE mp3sync)
+
+pkg_search_module(MPG123 REQUIRED libmpg123)
+pkg_search_module(TAGLIB REQUIRED taglib)
+
+AUX_SOURCE_DIRECTORY(. SRCFILES)
+include_directories(${TAGLIB_INCLUDE_DIRS} ${MPG123_INCLUDE_DIRS})
+add_executable (${THIS_EXE} ${SRCFILES})
+TARGET_LINK_LIBRARIES(${THIS_EXE} ${LIBS} mp3lame ${TAGLIB_LIBRARIES} ${MPG123_LIBRARIES})

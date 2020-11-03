@@ -1,0 +1,450 @@
+<?xml version="1.0"?>
+<GTK-Interface>
+
+<project>
+  <name>volnorm</name>
+  <program_name>volnorm</program_name>
+  <directory></directory>
+  <source_directory>.</source_directory>
+  <pixmaps_directory>pixmaps</pixmaps_directory>
+  <language>C</language>
+  <gnome_support>False</gnome_support>
+  <gettext_support>True</gettext_support>
+  <use_widget_names>True</use_widget_names>
+  <output_main_file>False</output_main_file>
+  <output_build_files>False</output_build_files>
+</project>
+
+<widget>
+  <class>GtkDialog</class>
+  <name>volnorm</name>
+  <signal>
+    <name>hide</name>
+    <handler>gtk_widget_destroy</handler>
+    <last_modification_time>Sun, 24 Sep 2000 22:15:32 GMT</last_modification_time>
+  </signal>
+  <title>volnorm config</title>
+  <type>GTK_WINDOW_TOPLEVEL</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <modal>False</modal>
+  <allow_shrink>True</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>True</auto_shrink>
+  <wmclass_name>volnorm</wmclass_name>
+  <wmclass_class>volnorm-config</wmclass_class>
+
+  <widget>
+    <class>GtkVBox</class>
+    <child_name>Dialog:vbox</child_name>
+    <name>dialog-vbox1</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkHBox</class>
+      <child_name>Dialog:action_area</child_name>
+      <name>dialog-action_area1</name>
+      <border_width>10</border_width>
+      <homogeneous>True</homogeneous>
+      <spacing>11</spacing>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+	<pack>GTK_PACK_END</pack>
+      </child>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>button_ok</name>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_button_ok_clicked</handler>
+	  <last_modification_time>Sun, 24 Sep 2000 22:32:51 GMT</last_modification_time>
+	</signal>
+	<label>OK</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>button_apply</name>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_button_apply_clicked</handler>
+	  <last_modification_time>Sun, 24 Sep 2000 22:32:57 GMT</last_modification_time>
+	</signal>
+	<label>Apply</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>button_cancel</name>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_button_cancel_clicked</handler>
+	  <last_modification_time>Sun, 24 Sep 2000 22:33:02 GMT</last_modification_time>
+	</signal>
+	<label>Cancel</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkNotebook</class>
+      <name>notebook1</name>
+      <can_focus>True</can_focus>
+      <show_tabs>True</show_tabs>
+      <show_border>True</show_border>
+      <tab_pos>GTK_POS_TOP</tab_pos>
+      <scrollable>False</scrollable>
+      <tab_hborder>5</tab_hborder>
+      <tab_vborder>2</tab_vborder>
+      <popup_enable>False</popup_enable>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkVBox</class>
+	<name>vbox1</name>
+	<border_width>6</border_width>
+	<homogeneous>False</homogeneous>
+	<spacing>3</spacing>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label1</name>
+	  <label>Target power level</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkHScale</class>
+	  <name>hscale_target_power</name>
+	  <width>100</width>
+	  <can_focus>True</can_focus>
+	  <draw_value>True</draw_value>
+	  <value_pos>GTK_POS_TOP</value_pos>
+	  <digits>2</digits>
+	  <policy>GTK_UPDATE_CONTINUOUS</policy>
+	  <value>0.25</value>
+	  <lower>0</lower>
+	  <upper>1</upper>
+	  <step>0.01</step>
+	  <page>0.1</page>
+	  <page_size>0</page_size>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>True</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label7</name>
+	  <label>Silence level</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkHScale</class>
+	  <name>hscale_silence_level</name>
+	  <can_focus>True</can_focus>
+	  <draw_value>True</draw_value>
+	  <value_pos>GTK_POS_TOP</value_pos>
+	  <digits>4</digits>
+	  <policy>GTK_UPDATE_CONTINUOUS</policy>
+	  <value>0.001</value>
+	  <lower>0</lower>
+	  <upper>0.01</upper>
+	  <step>1e-04</step>
+	  <page>0.001</page>
+	  <page_size>0</page_size>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label8</name>
+	  <label>Maximum Multiplier</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkHScale</class>
+	  <name>hscale_max_mult</name>
+	  <can_focus>True</can_focus>
+	  <draw_value>True</draw_value>
+	  <value_pos>GTK_POS_TOP</value_pos>
+	  <digits>2</digits>
+	  <policy>GTK_UPDATE_CONTINUOUS</policy>
+	  <value>5</value>
+	  <lower>0</lower>
+	  <upper>15</upper>
+	  <step>0.25</step>
+	  <page>1</page>
+	  <page_size>0</page_size>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<child_name>Notebook:tab</child_name>
+	<name>page_level</name>
+	<label>Level</label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+      </widget>
+
+      <widget>
+	<class>GtkVBox</class>
+	<name>vbox2</name>
+	<border_width>6</border_width>
+	<homogeneous>False</homogeneous>
+	<spacing>3</spacing>
+
+	<widget>
+	  <class>GtkCheckButton</class>
+	  <name>check_compress</name>
+	  <can_focus>True</can_focus>
+	  <label>Apply Compress</label>
+	  <active>False</active>
+	  <draw_indicator>True</draw_indicator>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label9</name>
+	  <label>Cutoff point</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkHScale</class>
+	  <name>hscale_cutoff</name>
+	  <can_focus>True</can_focus>
+	  <draw_value>True</draw_value>
+	  <value_pos>GTK_POS_TOP</value_pos>
+	  <digits>1</digits>
+	  <policy>GTK_UPDATE_CONTINUOUS</policy>
+	  <value>14000</value>
+	  <lower>0</lower>
+	  <upper>16000</upper>
+	  <step>50</step>
+	  <page>1000</page>
+	  <page_size>0</page_size>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label10</name>
+	  <label>Degree</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkHScale</class>
+	  <name>hscale_degree</name>
+	  <can_focus>True</can_focus>
+	  <draw_value>True</draw_value>
+	  <value_pos>GTK_POS_TOP</value_pos>
+	  <digits>1</digits>
+	  <policy>GTK_UPDATE_DISCONTINUOUS</policy>
+	  <value>2</value>
+	  <lower>1</lower>
+	  <upper>10</upper>
+	  <step>0.1</step>
+	  <page>1</page>
+	  <page_size>0</page_size>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>True</fill>
+	  </child>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<child_name>Notebook:tab</child_name>
+	<name>page_compress</name>
+	<label>Compress</label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+      </widget>
+
+      <widget>
+	<class>GtkVBox</class>
+	<name>vbox3</name>
+	<border_width>6</border_width>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+
+	<widget>
+	  <class>GtkCheckButton</class>
+	  <name>checkbutton_monitor</name>
+	  <can_focus>True</can_focus>
+	  <label>Use monitor
+(no effect for now)</label>
+	  <active>False</active>
+	  <draw_indicator>True</draw_indicator>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label5</name>
+	  <label></label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label6</name>
+	  <label></label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<child_name>Notebook:tab</child_name>
+	<name>page_monitor</name>
+	<visible>False</visible>
+	<label>Monitor</label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+      </widget>
+    </widget>
+  </widget>
+</widget>
+
+</GTK-Interface>

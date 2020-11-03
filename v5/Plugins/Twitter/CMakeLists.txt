@@ -1,0 +1,10 @@
+SET(THISPLUG Twitter)
+#SET(PLUGLIBS tinyxml-static)
+
+AUX_SOURCE_DIRECTORY(. SRCFILES1)
+AUX_SOURCE_DIRECTORY(./twitcurl SRCFILES2)
+AUX_SOURCE_DIRECTORY(./libjson/_internal/Source SRCFILES3)
+SET(SRCFILES ${SRCFILES1} ${SRCFILES2} ${SRCFILES3})
+INCLUDE_DIRECTORIES(./libjson)
+add_library (${THISPLUG} MODULE ${SRCFILES})
+include(../plugin_post_common.txt)

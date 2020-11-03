@@ -1,0 +1,35 @@
+SET(THISPLUG adj_decenc_flac)
+
+SET(USE_FLAC 0)
+
+pkg_search_module(FLACFILE OPTIONAL flac libflac libFLAC)
+IF(DEFINED FLACFILE_FOUND)
+#        message(STATUS "Found FLAC package...")
+        include_directories(${FLACFILE_INCLUDE_DIRS})
+        link_directories(${FLACFILE_LIBRARY_DIRS})
+ELSE(DEFINED FLACFILE_FOUND)
+        FIND_LIBRARY(FLACFILE_LIBRARIES NAMES FLAC)
+#	IF (NOT FLACFILE_LIBRARIES)
+#	        SET(FLACFILE_LIBRARIES "FLAC")
+#	ENDIF(NOT FLACFILE_LIBRARIES)
+ENDIF(DEFINED FLACFILE_FOUND)
+
+check_library_exists(FLAC FLAC__format_sample_rate_is_subset "${FLACFILE_LIBRARY_DIRS}" HAVE_MODERN_FLAC)
+IF(FLACFILE_LIBRARIES AND HAVE_MODERN_FLAC)
+#        message(STATUS "Found modern libFLAC...")
+        SET(USE_FLAC 1)
+ELSE(FLACFILE_LIBRARIES AND HAVE_MODERN_FLAC)
+        message(STATUS "No (modern) libFLAC, skipping FLAC decoder...")
+        SET(USE_FLAC 0)
+ENDIF(FLACFILE_LIBRARIES AND HAVE_MODERN_FLAC)
+
+IF(${USE_FLAC} EQUAL 1)
+
+#message(STATUS "FLAC decoder enabled!")
+AUX_SOURCE_DIRECTORY(. SRCFILES)
+add_library (${THISPLUG} MODULE ${SRCFILES})
+SET(PLUGLIBS ${FLACFILE_LIBRARIES})
+INCLUDE(../plugin_post_common.txt)
+
+ENDIF(${USE_FLAC} EQUAL 1)
+

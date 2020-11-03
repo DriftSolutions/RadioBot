@@ -1,0 +1,31 @@
+syntax = "proto2";
+
+message SaveHost {
+	required string name = 1;
+	required string host = 2;
+	required string user = 3;
+	required string pass = 4;
+	optional uint32 port = 5 [default = 10000];
+	optional uint32 mode = 6;
+};
+
+message SaveSAM {
+	optional string host = 1 [default = "localhost"];
+	optional string user = 2 [default = "root"];
+	optional string pass = 3;
+	optional string db = 4 [default = "samdb"];
+	optional uint32 port = 5 [default = 3306];
+};
+message SaveMusicDB {
+	optional string folder = 1;
+};	
+	
+message ConfigFile {
+	optional int32 host_index = 2;
+	optional bool beep_on_req = 3 [default = true];
+	optional bool connect_on_startup = 4;
+	optional bool keep_on_top = 5;
+	optional SaveSAM sam = 6;
+	optional SaveMusicDB musicdb = 7;
+	repeated SaveHost connections = 8;
+};

@@ -1,0 +1,285 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Profiled|Win32">
+      <Configuration>Debug Profiled</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7A4BB48C-E22B-4F6B-907C-F59E6DEF1B21}</ProjectGuid>
+    <RootNamespace>IRCBot4</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\output_props5.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\output_props5.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\output_props5.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">true</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RadioBot_d</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
+    <SourcePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SourcePath)</SourcePath>
+    <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PreBuildEventUseInBuild>
+    <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildAfterTargets>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">RadioBot</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);C:\deps\include\mysql</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_SSL;MEMLEAK;DSL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>sqlite3_d.lib;libmariadb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories></AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <PostBuildEvent>
+      <Message>Adding signatures and copying to dir...</Message>
+      <Command>"$(SolutionDir)..\doublesigncopy.bat" "$(TargetPath)" "$(SolutionDir)..\v5\Output\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);C:\deps\include\mysql</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DSL_STATIC;ENABLE_SSL;MEMLEAK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>sqlite3.lib;libmariadb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+    </Link>
+    <PostBuildEvent>
+      <Message>Adding signatures and copying to dir...</Message>
+      <Command>"$(SolutionDir)..\doublesigncopy.bat" "$(TargetPath)" "$(SolutionDir)..\v5\Output\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>..\..\inc_build.exe ..\src\build.ini ..\src\build.h</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Increasing build number...</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>..\src\build.h</Outputs>
+      <Inputs>../src/main.cpp;../src/irc.cpp;../src/sound_servers.cpp;../src/plugins.h;../src/ircbot.h;../src/builtin_commands.cpp</Inputs>
+    </CustomBuildStep>
+    <Manifest>
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
+    </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
+    </ManifestResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_SSL;MEMLEAK;DSL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>sqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\Output\$(ProjectName)_d.exe</OutputFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Message>Adding signatures...</Message>
+      <Command>"$(SolutionDir)..\doublesign.bat" "$(TargetPath)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Common\remote_protobuf.pb.cc" />
+    <ClCompile Include="..\src\botapi.cpp" />
+    <ClCompile Include="..\src\builtin_commands.cpp" />
+    <ClCompile Include="..\src\command_aliases.cpp" />
+    <ClCompile Include="..\src\commands.cpp" />
+    <ClCompile Include="..\src\config.cpp" />
+    <ClCompile Include="..\src\config_defaults.cpp" />
+    <ClCompile Include="..\src\config_online_backup.cpp" />
+    <ClCompile Include="..\src\db.cpp" />
+    <ClCompile Include="..\src\ial.cpp" />
+    <ClCompile Include="..\src\idle.cpp" />
+    <ClCompile Include="..\src\irc.cpp" />
+    <ClCompile Include="..\src\language.cpp" />
+    <ClCompile Include="..\src\log.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\make_cert.cpp" />
+    <ClCompile Include="..\src\message_ipc.cpp" />
+    <ClCompile Include="..\src\pcg\pcg_basic.cpp" />
+    <ClCompile Include="..\src\plugins.cpp" />
+    <ClCompile Include="..\src\ratings.cpp" />
+    <ClCompile Include="..\src\remote.cpp" />
+    <ClCompile Include="..\src\requests.cpp" />
+    <ClCompile Include="..\src\scraper_icecast2.cpp" />
+    <ClCompile Include="..\src\scraper_shoutcast.cpp" />
+    <ClCompile Include="..\src\scraper_shoutcast2.cpp" />
+    <ClCompile Include="..\src\scraper_steamcast.cpp" />
+    <ClCompile Include="..\src\SendQ.cpp" />
+    <ClCompile Include="..\src\sound_servers.cpp" />
+    <ClCompile Include="..\src\textproc.cpp" />
+    <ClCompile Include="..\src\users.cpp" />
+    <ClCompile Include="..\src\util.cpp" />
+    <ClCompile Include="..\src\yp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Common\remote_protobuf.pb.h" />
+    <ClInclude Include="..\Common\ircbot-config.h" />
+    <ClInclude Include="..\src\botapi.h" />
+    <ClInclude Include="..\src\util.h" />
+    <CustomBuildStep Include="..\src\build.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="..\src\commands_priv.h" />
+    <ClInclude Include="..\src\command_aliases.h" />
+    <ClInclude Include="..\src\commands.h" />
+    <ClInclude Include="..\src\common_messages.h" />
+    <ClInclude Include="..\src\db.h" />
+    <ClInclude Include="..\src\ial.h" />
+    <ClInclude Include="..\src\irc.h" />
+    <ClInclude Include="..\src\ircbot.h" />
+    <ClInclude Include="..\src\ircbot_private.h" />
+    <ClInclude Include="..\src\language.h" />
+    <ClInclude Include="..\..\Common\plugin_checksums.h" />
+    <ClInclude Include="..\src\plugins.h" />
+    <ClInclude Include="..\src\plugins_private.h" />
+    <ClInclude Include="..\src\ratings.h" />
+    <ClInclude Include="..\src\remote.h" />
+    <ClInclude Include="..\..\Common\remote_protocol.h" />
+    <ClInclude Include="..\src\requests.h" />
+    <ClInclude Include="..\src\resource.h" />
+    <ClInclude Include="..\src\resource2.h" />
+    <ClInclude Include="..\src\SendQ.h" />
+    <ClInclude Include="..\src\shoutcast.h" />
+    <ClInclude Include="..\src\textproc.h" />
+    <ClInclude Include="..\src\titus_version.h" />
+    <ClInclude Include="..\src\user_flags.h" />
+    <ClInclude Include="..\src\users.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\ca.ico" />
+    <None Include="..\src\icon1.ico" />
+    <None Include="..\src\icon2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\ircbot4.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\libzip\libzip.vcxproj">
+      <Project>{68265088-c2fe-4fa0-9329-1f9e9e3f0f1a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Common\tinyxml\tinyxml.vcxproj">
+      <Project>{3d650c08-852f-4272-b115-1278cb04637d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

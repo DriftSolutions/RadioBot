@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CustomBuildAfterTargets>PostBuildEvent</CustomBuildAfterTargets>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>"$(SolutionDir)..\move_and_sign.bat" "$(SolutionDir)\.." "$(TargetPath)" "$(SolutionDir)..\v5\Output\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying to output folder &amp; adding checksum...</Message>
+    </PostBuildEvent>
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

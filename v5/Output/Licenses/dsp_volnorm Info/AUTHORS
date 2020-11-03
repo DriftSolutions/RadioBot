@@ -1,0 +1,9 @@
+Ported to AutoDJ by Indy Sams <indy@shoutirc.com>
+
+Baruch Even <baruch.even@writeme.com>
+
+The plugin is based on the code base of the Sox Effects plugin written by:
+Zinx Verituse <zinx@linuxfreak.com>
+
+The volume normalizing algorithm is taken from the normalizer program by:
+Chris Vaill <cvaill@cs.columbia.edu>

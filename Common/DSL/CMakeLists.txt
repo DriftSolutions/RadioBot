@@ -1,0 +1,22 @@
+
+check_library_exists(mysqlclient_r mysql_init "" HAVE_MYSQL)
+IF(HAVE_MYSQL)
+        message(STATUS "Found MySQL...")
+ELSE(HAVE_MYSQL)
+        message(STATUS "No libmysqlclient_r found!")
+ENDIF(HAVE_MYSQL)
+
+AUX_SOURCE_DIRECTORY(/usr/include/drift/src SRCFILES)
+AUX_SOURCE_DIRECTORY(/usr/include/drift/src/algo ALGOFILES)
+AUX_SOURCE_DIRECTORY(/usr/include/drift/src/openssl OPENSSLFILES)
+
+IF(DSL_SHARED EQUAL 1)
+message(STATUS "DSL Mode: Shared")
+add_library (ibdsl SHARED ${SRCFILES} ${ALGOFILES} ${OPENSSLFILES}) 
+SET_TARGET_PROPERTIES(ibdsl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ../../v5/Output)
+TARGET_LINK_LIBRARIES(ibdsl ${LIBS})
+ELSE(DSL_SHARED EQUAL 1)
+message(STATUS "DSL Mode: Static")
+add_library (ibdsl STATIC ${SRCFILES} ${ALGOFILES} ${OPENSSLFILES}) 
+SET_TARGET_PROPERTIES(ibdsl PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ../../obj)
+ENDIF(DSL_SHARED EQUAL 1)
