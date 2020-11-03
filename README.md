@@ -13,5 +13,7 @@ OpenSSL: I recommend https://slproweb.com/products/Win32OpenSSL.html
 ## Compiling on Linux/Unix
 
 1. Install dependencies, cmake, git, protoc (profobuf compiler), and core GNU C/C++ compiler/tools (build-essential on Debian systems). You can find most deps by looking in your distro at https://wiki.shoutirc.com/index.php/Installation - you will need the corresponding -dev/-devel packages of course.<br />
-2. cd to v5 folder, run cmake . (Note: out of source tree builds not supported at this time)<br />
-3. make -j<however many CPU cores you have><br />
+```On Ubuntu 19.10: sudo apt install libssl-dev libsqlite3-dev libwxgtk3.0-dev libtag1-dev libmp3lame-dev libogg-dev libvorbis-dev libsndfile1-dev libavcodec-extra libavformat-dev libavcodec-dev libcurl4-openssl-dev libmpg123-dev libresample1-dev libncurses5-dev libphysfs-dev libpcre3-dev libprotobuf-dev libmysqlclient-dev libfaac-dev libopus-dev libloudmouth1-dev libdbus-glib-1-dev libmuparser-dev libsoxr-dev build-essential cmake libz-dev git protobuf-compiler```<br />
+  (Please let me know if I missed any.)
+2. cd to v5 folder, run: cmake . (Note: out of source tree builds not supported at this time)<br />
+3. make -j&lt;however many CPU cores you have&gt;<br />
