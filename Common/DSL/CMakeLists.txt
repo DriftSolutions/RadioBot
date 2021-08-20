@@ -1,11 +1,4 @@
 
-check_library_exists(mysqlclient_r mysql_init "" HAVE_MYSQL)
-IF(HAVE_MYSQL)
-        message(STATUS "Found MySQL...")
-ELSE(HAVE_MYSQL)
-        message(STATUS "No libmysqlclient_r found!")
-ENDIF(HAVE_MYSQL)
-
 IF (NOT EXISTS ${DSL_DIRECTORY})
 	execute_process(COMMAND git clone https://github.com/DriftSolutions/DSL.git "${DSL_DIRECTORY}")
 ENDIF()

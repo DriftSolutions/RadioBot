@@ -43,7 +43,12 @@ SET(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
 #SET(LIBS ${LIBS} ${GNUTLS_LIBRARIES})
 #INCLUDE_DIRECTORIES(${GNUTLS_INCLUDE_PATH})
 
-SET(LIBS ${LIBS} pthread mysqlclient)
+pkg_search_module(MYSQL REQUIRED mysqlclient_r mysqlclient)
+include_directories(${MYSQL_INCLUDE_DIRS})
+link_directories(${MYSQL_LIBRARY_DIRS})
+SET(LIBS ${LIBS} ${MYSQL_LIBRARIES})
+
+SET(LIBS ${LIBS} pthread)
 
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib ~/ircbot/Common/obj)
