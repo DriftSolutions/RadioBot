@@ -4,14 +4,8 @@ ELSE(CMAKE_SYSTEM_NAME STREQUAL FreeBSD OR CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
 SET(THISPLUG Mumble)
 SET(PLUGLIBS protobuf)
 
-ADD_CUSTOM_COMMAND(
-   OUTPUT proto_linux/Mumble.pb.cc
-   COMMAND mkdir -p proto_linux
-   COMMAND protoc --cpp_out=proto_linux Mumble.proto
-)
-
 AUX_SOURCE_DIRECTORY(. SRCFILES)
-add_library (${THISPLUG} MODULE ${SRCFILES} proto_linux/Mumble.pb.cc)
+add_library (${THISPLUG} MODULE ${SRCFILES} ../../src/proto_linux/mumble.pb.cc)
 include(../plugin_post_common.txt)
 
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL FreeBSD OR CMAKE_SYSTEM_NAME STREQUAL OpenBSD)

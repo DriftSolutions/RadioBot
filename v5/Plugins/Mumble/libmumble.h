@@ -29,7 +29,7 @@
 #ifdef WIN32
 #include "proto_win32/Mumble.pb.h"
 #else
-#include "proto_linux/Mumble.pb.h"
+#include "../../src/proto_linux/mumble.pb.h"
 #endif
 
 #if defined(WIN32)

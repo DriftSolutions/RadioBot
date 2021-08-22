@@ -52,9 +52,8 @@ SET(LIBS ${LIBS} pthread)
 
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib ~/ircbot/Common/obj)
-SET(DSL_DIRECTORY ${PROJECT_BINARY_DIR}/../Common/DSL/dslsrc)
+SET(DSL_DIRECTORY ${PROJECT_SOURCE_DIR}/../Common/DSL/dslsrc)
 include_directories(${DSL_DIRECTORY})
-
 
 SET(DSL_SHARED 0)
 add_definitions(-fPIC -DIB_PIC)
@@ -145,7 +144,7 @@ add_subdirectory (../Common/libzip ../Common/libzip)
 add_subdirectory (../Common/LibSSMT ../Common/LibSSMT)
 add_subdirectory (../Common/DSL ../Common/DSL)
 
-execute_process(COMMAND bash ./gen_distro)
+execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND bash ./gen_distro)
 
 SET(LIBS ibdsl ${LIBS})
 
@@ -158,9 +157,10 @@ add_subdirectory (../editusers ../editusers)
 
 add_subdirectory (Plugins)
 
-execute_process(COMMAND mkdir -p ./src/proto_linux)
-execute_process(COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/remote_protobuf.proto)
-execute_process(COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/autodj.proto)
+execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND mkdir -p ./src/proto_linux)
+execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/remote_protobuf.proto)
+execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/autodj.proto)
+execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND protoc -I ../Common --cpp_out=./src/proto_linux ../Common/mumble.proto)
 
 add_subdirectory (src)
 
