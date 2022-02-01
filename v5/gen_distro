@@ -45,6 +45,14 @@ fi;
 
 if [ -f /etc/debian_version ]; then
 	PLATFORM="debian"
+	RELEASE=`grep '12.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian12"
+	fi
+	RELEASE=`grep '11.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian11"
+	fi
 	RELEASE=`grep '10.' /etc/debian_version`
 	if [ $? -eq 0 ]; then
 		PLATFORM="debian10"
