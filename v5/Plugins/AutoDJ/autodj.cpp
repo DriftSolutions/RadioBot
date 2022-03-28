@@ -47,6 +47,7 @@ TT_DEFINE_THREAD(UpdateTitle);
 TT_DEFINE_THREAD(Watchdog);
 int AutoDJ_Commands(const char * command, const char * parms, USER_PRESENCE * ut, uint32 type);
 int AutoDJ_YT_Commands(const char * command, const char * parms, USER_PRESENCE * ut, uint32 type);
+const char * get_youtubedl_fn();
 
 int pluginnum=0;
 BOTAPI_DEF * api=NULL;
@@ -881,8 +882,14 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	api->commands->RegisterCommand_Proc(pluginnum, "autodj-reload",		&acl, CM_ALLOW_IRC_PRIVATE|CM_ALLOW_CONSOLE_PRIVATE|CM_FLAG_ASYNC		, AutoDJ_Commands, "This tells AutoDJ to re-scan your folders for new songs and reload the schedule (if any)");
 	api->commands->RegisterCommand_Proc(pluginnum, "autodj-force",		&acl, CM_ALLOW_IRC_PRIVATE|CM_ALLOW_CONSOLE_PRIVATE						, AutoDJ_Commands, "This command makes AutoDJ stop playing immediately");
 	api->commands->RegisterCommand_Proc(pluginnum, "autodj-dopromo",	&acl, CM_ALLOW_IRC_PRIVATE|CM_ALLOW_CONSOLE_PRIVATE						, AutoDJ_Commands, "This command makes AutoDJ play a promo after the current song");
-	api->commands->RegisterCommand_Proc(pluginnum, "youtube-dl", &acl, CM_ALLOW_IRC_PUBLIC | CM_ALLOW_IRC_PRIVATE | CM_ALLOW_CONSOLE_PRIVATE | CM_FLAG_ASYNC, AutoDJ_YT_Commands, "This command makes AutoDJ download a YouTube video.");
-	api->commands->RegisterCommand_Proc(pluginnum, "youtube-play", &acl, CM_ALLOW_IRC_PUBLIC | CM_ALLOW_IRC_PRIVATE | CM_ALLOW_CONSOLE_PRIVATE | CM_FLAG_ASYNC, AutoDJ_YT_Commands, "This command makes AutoDJ download a YouTube video and queue it for playback.");
+	const char * ytfn = get_youtubedl_fn();
+	if (ytfn != NULL) {
+		api->ib_printf2(pluginnum,_("AutoDJ -> Enabling YouTube functions with %s  ...\n"), ytfn);
+		api->commands->RegisterCommand_Proc(pluginnum, "youtube-dl", &acl, CM_ALLOW_IRC_PUBLIC | CM_ALLOW_IRC_PRIVATE | CM_ALLOW_CONSOLE_PRIVATE | CM_FLAG_ASYNC, AutoDJ_YT_Commands, "This command makes AutoDJ download a YouTube video.");
+		api->commands->RegisterCommand_Proc(pluginnum, "youtube-play", &acl, CM_ALLOW_IRC_PUBLIC | CM_ALLOW_IRC_PRIVATE | CM_ALLOW_CONSOLE_PRIVATE | CM_FLAG_ASYNC, AutoDJ_YT_Commands, "This command makes AutoDJ download a YouTube video and queue it for playback.");
+	} else {
+		api->ib_printf2(pluginnum,_("AutoDJ -> yt-dlp or youtube-dl not found, disabling YouTube functions.\n"));
+	}
 
 	api->commands->FillACL(&acl, UFLAG_BASIC_SOURCE, 0, 0);
 	api->commands->RegisterCommand_Proc(pluginnum, "autodj-stop",		&acl, CM_ALLOW_IRC_PRIVATE|CM_ALLOW_CONSOLE_PRIVATE						, AutoDJ_Commands, "This command tells AutoDJ to count you in so you can DJ");

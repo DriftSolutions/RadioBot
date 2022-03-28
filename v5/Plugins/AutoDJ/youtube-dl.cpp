@@ -27,6 +27,67 @@
 
 SyncedInt<uint32> ytDownloading;
 
+const char * get_youtubedl_fn() {
+	static char ytfn[MAX_PATH]={0};
+	if (ytfn[0] != 0) {
+		return ytfn;
+	}
+
+#if defined(WIN32)
+	const char * youtubedl_files[] = {
+		"yt-dlp.exe",
+		"youtube-dl.exe",
+		NULL
+	};
+#else
+	const char * youtubedl_files[] = {
+		"./yt-dlp",
+		"./youtube-dl",
+		NULL
+	};
+#endif
+	for (size_t i=0; youtubedl_files[i] != NULL; i++) {
+		if (access(youtubedl_files[i], 0) == 0) {
+			sstrcpy(ytfn, youtubedl_files[i]);
+			return ytfn;
+		}
+	}
+#if !defined(WIN32)
+	const char * ret = NULL;
+	const char * youtubedl_files2[] = {
+		"yt-dlp",
+		"youtube-dl",
+		NULL
+	};
+	const char * ld = getenv("PATH");
+	if (ld && strlen(ld)) {
+		char * tmp = dsl_strdup(ld);
+		char * p2 = NULL;
+		char * p = strtok_r(tmp, ":", &p2);
+		char dir[MAX_PATH]={0};
+		while (p && ytfn[0] == 0) {
+			sstrcpy(dir, p);
+			if (dir[strlen(dir) - 1] != PATH_SEP) {
+				sstrcat(dir, PATH_SEPS);
+			}
+			for (size_t i=0; youtubedl_files2[i] != NULL; i++) {
+				string fn = dir;
+				fn += youtubedl_files2[i];
+				if (access(fn.c_str(), 0) == 0) {
+					sstrcpy(ytfn, fn.c_str());
+					ret = ytfn;
+					break;
+				}
+			}
+			p = strtok_r(NULL, ":", &p2);
+		}
+		dsl_free(tmp);
+	}
+#endif
+	return ret;
+}
+
+
 int get_url_cb(void * parm, int ncols, char ** row, char ** cols) {
 	char * fn = (char *)parm;
 	if (row[0]) {
@@ -235,12 +296,12 @@ int AutoDJ_YT_Commands(const char * command, const char * parms, USER_PRESENCE *
 			ffn = path;
 			ffn += fn;
 
+			const char * ytfn = get_youtubedl_fn();
+			if (ytfn == NULL) {
+				return 1;
+			}
 			stringstream sstr;
-#if defined(WIN32)
-			sstr << "youtube-dl.exe";
-#else
-			sstr << "youtube-dl";
-#endif
+			sstr << ytfn;
 			sstr << " --playlist-items 1 --no-playlist -x --audio-format mp3 --add-metadata --metadata-from-title \"%(title)s\" " << ad_config.Options.YouTubeExtra << " -o " << escapeshellarg(fnpat, buf, sizeof(buf));
 			sstr << " " << escapeshellarg(url, buf, sizeof(buf));
 //#if defined(DEBUG)
