@@ -637,8 +637,13 @@ BOTAPI BotAPI = {
 	genrand_range,
 	SendRemoteReply,
 	SendMessage,
+#if defined(IRCBOT_ENABLE_IRC)
 	&ircfuncs,
 	&ialfuncs,
+#else
+	NULL,
+	NULL,
+#endif
 	&textfuncs,
 	&commandfuncs,
 	&userfuncs,

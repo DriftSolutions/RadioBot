@@ -485,6 +485,31 @@ THREADTYPE remoteThread(VOID *lpData) {
 						zfree(si);
 						break;
 
+					case RCMD_GET_SOUND_SERVER:
+						if (rHead.datalen >= 1) {
+							uint8 num = *((uint8 *)buf);
+							if (num < config.num_ss) {
+								rHead.scmd = RCMD_SOUND_SERVER;								
+								rHead.datalen = sizeof(config.s_servers[num]);
+								memcpy(&buf, &rHead, sizeof(rHead));
+								memcpy(&buf[sizeof(rHead)], &config.s_servers[num], sizeof(config.s_servers[num]));
+								config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);								
+							} else {
+								rHead.scmd = RCMD_GENERIC_MSG;
+								strcpy((char *)&buf + sizeof(rHead), _("Invalid server number included!"));
+								rHead.datalen = strlen(_("Invalid server number included!")) + 1;
+								memcpy(&buf, &rHead, sizeof(rHead));
+								config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);
+							}
+						} else {
+							rHead.scmd = RCMD_GENERIC_MSG;
+							strcpy((char *)&buf + sizeof(rHead), _("No server number included!"));
+							rHead.datalen = strlen(_("No server number included!")) + 1;
+							memcpy(&buf, &rHead, sizeof(rHead));
+							config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);
+						}
+						break;
+
 					case RCMD_REQ_LOGOUT: // DJ logout
 						LockMutex(requestMutex);
 						if ((config.req_user && config.req_user->User == User) || uflag_have_any_of(User->Flags, UFLAG_MASTER|UFLAG_OP)) {

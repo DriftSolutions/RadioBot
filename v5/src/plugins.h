@@ -1042,8 +1042,12 @@ struct BOTAPI {
 	void (*SendRemoteReply)(T_SOCKET * socket, REMOTE_HEADER * rHead, const char * data); ///< Sends a reply/command to a remote connection
 	int (*SendMessage)(int toplug, uint32 MsgID, char * data, int32 datalen); ///< Sends a message to a plugin or all plugins.
 
+#if !defined(IRCBOT_STANDALONE)
 	API_irc			* irc; ///< @sa API_irc
 	API_ial			* ial; ///< @sa API_ial
+#else
+	void * unused_standalone[2];
+#endif
 	API_textfunc	* textfunc; ///< @sa API_textfunc
 	API_commands	* commands; ///< @sa API_commands
 	API_user		* user; ///< @sa API_user

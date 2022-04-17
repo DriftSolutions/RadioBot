@@ -273,8 +273,9 @@ public:
 	bool rehash;
 	int32 unload_plugin;
 	int64 start_time;
+	int32 dospam;
 #if defined(IRCBOT_ENABLE_IRC)
-	int32 num_irc,num_timers,dospam,dotopic,doonjoin;
+	int32 num_irc,num_timers,dotopic,doonjoin;
 	string topicOverride;
 	IRCNETS ircnets[MAX_IRC_SERVERS];
 #endif

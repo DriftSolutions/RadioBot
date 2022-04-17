@@ -75,7 +75,7 @@ bool listhm_cb(const char * nick, const char * hm, void * ptr) {
 	return true;
 }
 
-int main() {
+int main(int argc, char * argv[]) {
 	char buf[1024];
 
 	memset(&config, 0, sizeof(config));
@@ -83,11 +83,16 @@ int main() {
 	printf("WARNING: DO NOT RUN THIS WHILE RADIOBOT IS RUNNING!!!\n");
 	printf("IF YOU DO, RADIOBOT MAY OVERWRITE ANY CHANGES YOU MAKE\n\n");
 
+	string fn = "ircbot.db";
+	if (argc > 1) {
+		fn = argv[1];
+	}
+
 	int err=0;
 #if SQLITE_VERSION_NUMBER >= 3005000
-	if ((err = sqlite3_open_v2("ircbot.db", &config.hSQL, SQLITE_OPEN_READWRITE, NULL)) != SQLITE_OK) {
+	if ((err = sqlite3_open_v2(fn.c_str(), &config.hSQL, SQLITE_OPEN_READWRITE, NULL)) != SQLITE_OK) {
 #else
-	if ((err = sqlite3_open("ircbot.db", &config.hSQL)) != SQLITE_OK) {
+	if ((err = sqlite3_open(fn.c_str(), &config.hSQL)) != SQLITE_OK) {
 #endif
 		if (config.hSQL) {
 			printf("ERROR: Could not open ircbot.db: %s!\n", sqlite3_errmsg(config.hSQL));
