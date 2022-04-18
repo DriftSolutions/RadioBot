@@ -102,6 +102,9 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent />
+    <PostBuildEvent>
+      <Command>"$(SolutionDir)\..\move_and_sign.bat" "$(SolutionDir)\.." "$(TargetPath)" "$(SolutionDir)..\v5\Output\plugins\$(TargetFileName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -124,7 +127,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SolutionDir)\..\move_and_sign.bat" "$(TargetPath)" "$(SolutionDir)..\v4\Output\Plugins\AutoDJ\$(TargetFileName)" "$(SolutionDir)..\v5\Output\Plugins\AutoDJ\$(TargetFileName)"</Command>
+      <Command>"$(SolutionDir)\..\move_and_sign.bat" "$(SolutionDir)\.." "$(TargetPath)" "$(SolutionDir)..\v5\Output\plugins\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">

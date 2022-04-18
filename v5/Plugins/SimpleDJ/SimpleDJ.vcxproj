@@ -155,7 +155,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Adding checksum...</Message>
-      <Command>..\..\..\move_and_sign.bat "$(TargetPath)" "$(SolutionDir)..\v4\Output\plugins\$(TargetFileName)"</Command>
+      <Command>"$(SolutionDir)\..\move_and_sign.bat" "$(SolutionDir)\.." "$(TargetPath)" "$(SolutionDir)..\v5\Output\plugins\$(TargetFileName)"</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>..\..\..\inc_build.exe "$(ProjectDir)build.ini" "$(ProjectDir)build.h"</Command>
