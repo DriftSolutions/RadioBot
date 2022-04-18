@@ -83,8 +83,10 @@ const char * get_youtubedl_fn() {
 		}
 		dsl_free(tmp);
 	}
-#endif
 	return ret;
+#else
+	return NULL;
+#endif
 }
 
 

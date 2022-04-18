@@ -488,19 +488,18 @@ THREADTYPE remoteThread(VOID *lpData) {
 					case RCMD_GET_SOUND_SERVER:
 						if (rHead.datalen >= 1) {
 							uint8 num = *((uint8 *)buf);
-							if (num < config.num_ss) {
-								rHead.scmd = RCMD_SOUND_SERVER;								
-								rHead.datalen = sizeof(config.s_servers[num]);
-								memcpy(&buf, &rHead, sizeof(rHead));
-								memcpy(&buf[sizeof(rHead)], &config.s_servers[num], sizeof(config.s_servers[num]));
-								config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);								
-							} else {
-								rHead.scmd = RCMD_GENERIC_MSG;
-								strcpy((char *)&buf + sizeof(rHead), _("Invalid server number included!"));
-								rHead.datalen = strlen(_("Invalid server number included!")) + 1;
-								memcpy(&buf, &rHead, sizeof(rHead));
+							rHead.scmd = RCMD_SOUND_SERVER;
+							rHead.datalen = sizeof(SOUND_SERVER);
+							memcpy(&buf, &rHead, sizeof(rHead));
+							if (GetSSInfo(num, (SOUND_SERVER *)&buf[sizeof(rHead)])) {
 								config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);
+								continue;
 							}
+							rHead.scmd = RCMD_GENERIC_MSG;
+							strcpy((char *)&buf + sizeof(rHead), _("Invalid server number included!"));
+							rHead.datalen = strlen(_("Invalid server number included!")) + 1;
+							memcpy(&buf, &rHead, sizeof(rHead));
+							config.sockets->Send(sock, buf, sizeof(rHead) + rHead.datalen);
 						} else {
 							rHead.scmd = RCMD_GENERIC_MSG;
 							strcpy((char *)&buf + sizeof(rHead), _("No server number included!"));
@@ -594,7 +593,7 @@ THREADTYPE remoteThread(VOID *lpData) {
 						}
 						RelMutex(requestMutex);
 #else
-						rHead.cmd=RCMD_GENERIC_ERROR;
+						rHead.scmd=RCMD_GENERIC_ERROR;
 						sstrcpy(buf,_("This function isn't supported by the standalone AutoDJ"));
 #endif
 						rHead.datalen=strlen(buf);
@@ -640,7 +639,7 @@ THREADTYPE remoteThread(VOID *lpData) {
 						}
 						RelMutex(requestMutex);
 #else
-						rHead.cmd=RCMD_GENERIC_ERROR;
+						rHead.scmd=RCMD_GENERIC_ERROR;
 						sstrcpy(buf,_("This function isn't supported by the standalone AutoDJ"));
 #endif
 						rHead.datalen=strlen(buf);

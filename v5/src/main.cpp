@@ -809,9 +809,9 @@ int BotMain(int argc, char *argv[]) {
 		LoadReperm();
 		RegisterCommandAliases();
 
+#if defined(IRCBOT_ENABLE_IRC)
 		TT_StartThread(SendQ_Thread, NULL, _("SendQ"));
 
-#if defined(IRCBOT_ENABLE_IRC)
 		for (i=0; i < config.num_irc; i++) {
 			sprintf(curline, _("ircThread %d"), i);
 			TT_StartThread(ircThread,(void *)i,curline);

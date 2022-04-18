@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug Profiled|Win32">
       <Configuration>Debug Profiled</Configuration>
@@ -15,10 +15,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7A4BB48C-E22B-4F6B-907C-F59E6DEF1B21}</ProjectGuid>
+    <ProjectGuid>{3F4D0A27-1186-4747-AC98-0E4F36DB4261}</ProjectGuid>
     <RootNamespace>IRCBot4</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'" Label="Configuration">
@@ -73,18 +72,18 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RadioBot_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_d</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
-    <SourcePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SourcePath)</SourcePath>
+    <SourcePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SourcePath);C:\Users\CPU Killer\Desktop\Source Codes\Backed Up\ircbot\v5\Output\Plugins</SourcePath>
     <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PreBuildEventUseInBuild>
     <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildAfterTargets>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">RadioBot</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AutoDJ</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);C:\deps\include\mysql</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_SSL;MEMLEAK;DSL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_SSL;MEMLEAK;DSL_STATIC;%(PreprocessorDefinitions);IRCBOT_STANDALONE</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -93,7 +92,6 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <StringPooling>true</StringPooling>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>sqlite3_d.lib;libmariadb.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,9 +103,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>c:\memleak\lib;C:\Users\CPU Killer\Desktop\Source Codes\Backed Up\ircbot\v5\Output\Plugins</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Message>Adding signatures and copying to dir...</Message>
@@ -122,16 +118,13 @@
       </Message>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);C:\deps\include\mysql</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DSL_STATIC;ENABLE_SSL;MEMLEAK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ENABLE_SSL;MEMLEAK;DSL_STATIC;%(PreprocessorDefinitions);IRCBOT_STANDALONE</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>sqlite3.lib;libmariadb.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -142,8 +135,10 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
       <Message>Adding signatures and copying to dir...</Message>
@@ -159,12 +154,6 @@
       <Outputs>..\src\build.h</Outputs>
       <Inputs>../src/main.cpp;../src/irc.cpp;../src/sound_servers.cpp;../src/plugins.h;../src/ircbot.h;../src/builtin_commands.cpp</Inputs>
     </CustomBuildStep>
-    <Manifest>
-      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
-    </Manifest>
-    <ManifestResourceCompile>
-      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
-    </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Profiled|Win32'">
     <ClCompile>
@@ -231,9 +220,8 @@
     <ClCompile Include="..\src\yp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\remote_protobuf.pb.h" />
-    <ClInclude Include="..\Common\ircbot-config.h" />
     <ClInclude Include="..\src\botapi.h" />
+    <ClInclude Include="..\src\pcg\pcg_basic.h" />
     <ClInclude Include="..\src\util.h" />
     <CustomBuildStep Include="..\src\build.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -244,9 +232,9 @@
     <ClInclude Include="..\src\common_messages.h" />
     <ClInclude Include="..\src\db.h" />
     <ClInclude Include="..\src\ial.h" />
+    <ClInclude Include="..\src\idle.h" />
     <ClInclude Include="..\src\irc.h" />
     <ClInclude Include="..\src\ircbot.h" />
-    <ClInclude Include="..\src\ircbot_private.h" />
     <ClInclude Include="..\src\language.h" />
     <ClInclude Include="..\..\Common\plugin_checksums.h" />
     <ClInclude Include="..\src\plugins.h" />
@@ -266,7 +254,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\ca.ico" />
-    <None Include="..\src\icon1.ico" />
     <None Include="..\src\icon2.ico" />
   </ItemGroup>
   <ItemGroup>

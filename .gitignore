@@ -37,4 +37,13 @@ Release
 *.exe
 *.out
 *.app
-ircbot.pem
+# Misc files
+*.pem
+client5_savefile.pb.h
+autodj.pb.cc
+autodj.pb.h
+remote_protobuf.pb.cc
+remote_protobuf.pb.h
+Mumble.pb.cc
+Mumble.pb.h
+

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client3", "..\Client3\Client3.vcxproj", "{00F902C4-9CD5-4EC4-A3FA-95D41F6F2893}"
 EndProject
@@ -280,6 +280,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pidgin", "..\v5\Plugins\Pidgin\Pidgin.vcxproj", "{63AB1EA9-6DE9-4102-93AE-1CF82D825CFE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Quotes", "..\v5\Plugins\Quotes\Quotes.vcxproj", "{6F699183-97ED-4CAC-81A4-05012741E044}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRCBot5_Standalone", "..\v5\IRCBot5_Standalone\IRCBot5_Standalone.vcxproj", "{3F4D0A27-1186-4747-AC98-0E4F36DB4261}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2300,6 +2302,36 @@ Global
 		{6F699183-97ED-4CAC-81A4-05012741E044}.Release|Win32.ActiveCfg = Release|Win32
 		{6F699183-97ED-4CAC-81A4-05012741E044}.Release|Win32.Build.0 = Release|Win32
 		{6F699183-97ED-4CAC-81A4-05012741E044}.Release|x86.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|Mixed Platforms.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|Mixed Platforms.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|Win32.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|Win32.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|x86.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Lite|x86.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|Mixed Platforms.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|Mixed Platforms.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|Win32.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|Win32.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|x86.ActiveCfg = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug Profiled|x86.Build.0 = Debug Profiled|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|Win32.Build.0 = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|x86.ActiveCfg = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Debug|x86.Build.0 = Debug|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|Mixed Platforms.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|Mixed Platforms.Build.0 = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|Win32.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|Win32.Build.0 = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|x86.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release Lite|x86.Build.0 = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|Win32.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|Win32.Build.0 = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|x86.ActiveCfg = Release|Win32
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2392,9 +2424,10 @@ Global
 		{25D9BFA7-73F6-48C9-876A-37F6D991D697} = {0ADAC4F6-0437-4268-9758-016F7553F062}
 		{63AB1EA9-6DE9-4102-93AE-1CF82D825CFE} = {0ADAC4F6-0437-4268-9758-016F7553F062}
 		{6F699183-97ED-4CAC-81A4-05012741E044} = {0ADAC4F6-0437-4268-9758-016F7553F062}
+		{3F4D0A27-1186-4747-AC98-0E4F36DB4261} = {2B2AB068-C2F8-49D7-A604-874609D39B4D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = ..
 		SolutionGuid = {0C6357B1-C1AC-4210-8E14-C39E7A94C5BD}
+		VisualSVNWorkingCopyRoot = ..
 	EndGlobalSection
 EndGlobal
