@@ -39,6 +39,7 @@ Release
 *.app
 # Misc files
 *.pem
+client5_savefile.pb.cc
 client5_savefile.pb.h
 autodj.pb.cc
 autodj.pb.h

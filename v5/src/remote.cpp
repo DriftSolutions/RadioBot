@@ -318,6 +318,7 @@ THREADTYPE remoteThread(VOID *lpData) {
 	memset(&uploads, 0, sizeof(uploads));
 
 	config.sockets->SetSendTimeout(sock, 3000);
+	config.sockets->SetRecvTimeout(sock, 30000);
 
 	while ((n = config.sockets->Select_Read(sock, 1000)) >= 0 && !config.shutdown_now) {
 		if (n == 1) {
@@ -352,6 +353,10 @@ THREADTYPE remoteThread(VOID *lpData) {
 						if (n <= 0) { break; }
 						left -= n;
 						ind += n;
+					}
+					if (left > 0) {
+						ib_printf(_("Remote -> Error receiving packet, dropping connection...\n"));
+						break;
 					}
 					buf[rHead.datalen]=0;
 				}

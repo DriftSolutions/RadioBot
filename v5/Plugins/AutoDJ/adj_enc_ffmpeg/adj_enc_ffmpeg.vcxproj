@@ -18,7 +18,6 @@
     <ClCompile Include="ffmpeg_avio.cpp" />
     <ClCompile Include="ffmpeg_decoder.cpp" />
     <ClCompile Include="ffmpeg_encoder.cpp" />
-    <ClCompile Include="ffmpeg_urlproto.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ffmpeg_codec.h" />
@@ -93,7 +92,6 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADJ_ENC_OGG_EXPORTS;%(PreprocessorDefinitions);HAVE_SWRESAMPLER</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -101,6 +99,8 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>C:\deps\drift;C:\deps\include;C:\deps\include\ffmpeg</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -126,6 +126,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <StringPooling>true</StringPooling>
       <AdditionalIncludeDirectories>C:\deps\drift;C:\deps\include;C:\deps\include\ffmpeg</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>

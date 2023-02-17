@@ -1,7 +1,7 @@
 //@AUTOHEADER@BEGIN@
 /**********************************************************************\
 |                          ShoutIRC RadioBot                           |
-|           Copyright 2004-2020 Drift Solutions / Indy Sams            |
+|           Copyright 2004-2023 Drift Solutions / Indy Sams            |
 |        More information available at https://www.shoutirc.com        |
 |                                                                      |
 |                    This file is part of RadioBot.                    |
@@ -31,6 +31,14 @@
 #endif
 
 AD_PLUGIN_API * adapi=NULL;
+
+string ib_av_strerror(int errnum) {
+	char buf[AV_ERROR_MAX_STRING_SIZE+1] = { 0 };
+	if (av_strerror(errnum, buf, sizeof(buf)) != 0) {
+		snprintf(buf, sizeof(buf), "Unknown error (%d)", errnum);
+	}
+	return buf;
+}
 
 char * exts[] = {
 	//Music files that other plugins should handle
@@ -93,11 +101,7 @@ bool ffmpeg_is_my_file(const char * fn, const char * mime_type) {
 		}
 
 		LockMutex(ffmpegMutex);
-#if LIBAVFORMAT_VERSION_MAJOR > 52 || (LIBAVFORMAT_VERSION_MAJOR == 52 && LIBAVFORMAT_VERSION_MINOR >= 45)
-		AVOutputFormat * of = av_guess_format(NULL, fn, mime_type);
-#else
-		AVOutputFormat * of = guess_format(NULL, fn, mime_type);
-#endif
+		const AVOutputFormat * of = av_guess_format(NULL, fn, mime_type);
 		RelMutex(ffmpegMutex);
 		if (of != NULL) {
 			return true;
@@ -105,39 +109,23 @@ bool ffmpeg_is_my_file(const char * fn, const char * mime_type) {
 
 		AVFormatContext	* pContext = NULL;
 		LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-		int err = av_open_input_file(&pContext, fn, NULL, 0, NULL);
-#else
-		int err = avformat_open_input(&pContext, fn, NULL, NULL);
-#endif
-		RelMutex(ffmpegMutex);
-		if (err != 0) {
-			return false;
+		bool ret = (avformat_open_input(&pContext, fn, NULL, NULL) == 0);
+		if (ret) {
+			avformat_close_input(&pContext);
 		}
-
-		LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-		av_close_input_file(pContext);
-#else
-		avformat_close_input(&pContext);
-#endif
 		RelMutex(ffmpegMutex);
-		return true;
+		return ret;
 	} else if (mime_type) {
 		if (!stricmp(mime_type, "audio/mpeg")) {
 			return false;
 		}
-#if LIBAVFORMAT_VERSION_MAJOR > 52 || (LIBAVFORMAT_VERSION_MAJOR == 52 && LIBAVFORMAT_VERSION_MINOR >= 45)
-		AVOutputFormat * of = av_guess_format(NULL, NULL, mime_type);
-#else
-		AVOutputFormat * of = guess_format(NULL, NULL, mime_type);
-#endif
+		const AVOutputFormat * of = av_guess_format(NULL, NULL, mime_type);
 		if (of != NULL) {
 			return true;
 		}
 	}
 
-	return true;
+	return false;
 }
 
 bool ffmpeg_get_title_data(const char * fn, TITLE_DATA * td, uint32 * songlen) {
@@ -145,115 +133,82 @@ bool ffmpeg_get_title_data(const char * fn, TITLE_DATA * td, uint32 * songlen) {
 	if (songlen) { *songlen=0; }
 
 	bool ret = false;
-	#ifdef WIN32
-	__try {
-	#endif
-		AVFormatContext	* pContext = NULL;
-		LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-		int err = av_open_input_file(&pContext, fn, NULL, 0, NULL);
-#else
-		int err = avformat_open_input(&pContext, fn, NULL, NULL);
-#endif
-		RelMutex(ffmpegMutex);
-		if (err == 0) {
-			// this is needed to load meta tags and stream duration
-#if (LIBAVFORMAT_VERSION_MAJOR > 53) || (LIBAVFORMAT_VERSION_MAJOR == 53 && LIBAVFORMAT_VERSION_MINOR >= 6)
-			if (avformat_find_stream_info(pContext, NULL) >= 0) {
-#else
-			if (av_find_stream_info(pContext) >= 0) {
-#endif
-#if LIBAVFORMAT_VERSION_MAJOR < 53
-				strlcpy(td->title, pContext->title, sizeof(td->title));
-				strlcpy(td->artist, pContext->author, sizeof(td->artist));
-				strlcpy(td->album, pContext->album, sizeof(td->album));
-				strlcpy(td->genre, pContext->genre, sizeof(td->genre));
-#else
-				AVDictionaryEntry * p = av_dict_get(pContext->metadata, "title", NULL, 0);
-				if (p) {
-					strlcpy(td->title, p->value, sizeof(td->title));
-				}
-				p = av_dict_get(pContext->metadata, "author", NULL, 0);
-				if (p) {
-					strlcpy(td->artist, p->value, sizeof(td->artist));
-				}
-				p = av_dict_get(pContext->metadata, "album", NULL, 0);
-				if (p) {
-					strlcpy(td->album, p->value, sizeof(td->album));
-				}
-				p = av_dict_get(pContext->metadata, "album_artist", NULL, 0);
-				if (p) {
-					strlcpy(td->album_artist, p->value, sizeof(td->album_artist));
-				}
-				p = av_dict_get(pContext->metadata, "author", NULL, 0);
-				if (p) {
-					strlcpy(td->genre, p->value, sizeof(td->genre));
-				}
-				p = av_dict_get(pContext->metadata, "url", NULL, 0);
-				if (p) {
-					strlcpy(td->url, p->value, sizeof(td->url));
-				}
-				p = av_dict_get(pContext->metadata, "comment", NULL, 0);
-				if (p) {
-					strlcpy(td->comment, p->value, sizeof(td->comment));
-				}
-				p = av_dict_get(pContext->metadata, "year", NULL, 0);
-				if (p) {
-					td->year = atoi(p->value);
-				}
-#endif
-				if (songlen) {
-					if (pContext->duration != 0x8000000000000000LL) {
-						*songlen = pContext->duration / AV_TIME_BASE;
-					}
-				}
-				strtrim(td->title);
-				strtrim(td->artist);
-				strtrim(td->album_artist);
-				strtrim(td->album);
-				strtrim(td->genre);
-				strtrim(td->comment);
-				ret = true;
-			} else {
-				adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error getting stream info! (err: %d)\n"), err);
+	AVFormatContext	* pContext = NULL;
+	LockMutex(ffmpegMutex);
+	int err = avformat_open_input(&pContext, fn, NULL, NULL);
+	RelMutex(ffmpegMutex);
+	if (err == 0) {
+		// this is needed to load meta tags and stream duration
+		err = avformat_find_stream_info(pContext, NULL);
+		if (err >= 0) {
+			AVDictionaryEntry * p = av_dict_get(pContext->metadata, "title", NULL, 0);
+			if (p) {
+				strlcpy(td->title, p->value, sizeof(td->title));
 			}
-			LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-			av_close_input_file(pContext);
-#else
-			avformat_close_input(&pContext);
-#endif
-			RelMutex(ffmpegMutex);
+			p = av_dict_get(pContext->metadata, "author", NULL, 0);
+			if (p) {
+				strlcpy(td->artist, p->value, sizeof(td->artist));
+			}
+			p = av_dict_get(pContext->metadata, "album", NULL, 0);
+			if (p) {
+				strlcpy(td->album, p->value, sizeof(td->album));
+			}
+			p = av_dict_get(pContext->metadata, "album_artist", NULL, 0);
+			if (p) {
+				strlcpy(td->album_artist, p->value, sizeof(td->album_artist));
+			}
+			p = av_dict_get(pContext->metadata, "author", NULL, 0);
+			if (p) {
+				strlcpy(td->genre, p->value, sizeof(td->genre));
+			}
+			p = av_dict_get(pContext->metadata, "url", NULL, 0);
+			if (p) {
+				strlcpy(td->url, p->value, sizeof(td->url));
+			}
+			p = av_dict_get(pContext->metadata, "comment", NULL, 0);
+			if (p) {
+				strlcpy(td->comment, p->value, sizeof(td->comment));
+			}
+			p = av_dict_get(pContext->metadata, "year", NULL, 0);
+			if (p) {
+				td->year = atoi(p->value);
+			}
+			if (songlen) {
+				if (pContext->duration != 0x8000000000000000LL) {
+					*songlen = pContext->duration / AV_TIME_BASE;
+				}
+			}
+			strtrim(td->title);
+			strtrim(td->artist);
+			strtrim(td->album_artist);
+			strtrim(td->album);
+			strtrim(td->genre);
+			strtrim(td->comment);
+			ret = true;
 		} else {
-			adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file: %s!\n"), fn);
+			adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error getting stream info for %s: %s\n"), fn, ib_av_strerror(err).c_str());
 		}
-	#ifdef WIN32
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
-		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> ERROR: Exception occured while getting title info from: %s!\n"), fn);
-		ret = false;
+		LockMutex(ffmpegMutex);
+		avformat_close_input(&pContext);
+		RelMutex(ffmpegMutex);
+	} else {
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file: %s: %s\n"), fn, ib_av_strerror(err).c_str());
 	}
-	#endif
 
 	return ret;
 }
 
 class ffmpeg_Decoder: public AutoDJ_Decoder {
 private:
-	int audioStream;
-	//time_t ffmpeg_time_start;
-	uint32 frameno;
-	int last_channels, last_samplerate;
-	AVFrac curpos;
-	AVFormatContext	* ffmpeg_context;
-//#if LIBAVCODEC_VERSION_MAJOR >= 58
-//	AVCodecParameters  * ffmpeg_codecctx;
-//#else
-	AVCodecContext  * ffmpeg_codecctx;
-//#endif
-	AVCodec         * ffmpeg_codec;
-#ifdef FFMPEG_USE_AVIO
-	AVIOContext		* avio_context;
-#endif
+	int audioStream = -1;
+	uint32 frameno = 0;
+	uint64_t layout = 0;
+
+	AVIOContext		* avio_context = NULL;
+	AVFormatContext	* ffmpeg_context = NULL;
+	AVCodecContext  * ffmpeg_codecctx = NULL;
+	const AVCodec * ffmpeg_codec = NULL;
+	SwrContext * swr = NULL;
 	bool finishOpen();
 public:
 	ffmpeg_Decoder();
@@ -265,54 +220,58 @@ public:
 };
 
 ffmpeg_Decoder::ffmpeg_Decoder() {
-	audioStream = 0;
-	frameno = 0;
-	last_channels = last_samplerate = 0;
-	ffmpeg_context = NULL;
-	ffmpeg_codecctx = NULL;
-	ffmpeg_codec = NULL;
-#ifdef FFMPEG_USE_AVIO
-	avio_context = NULL;
-#endif
+}
+
+uint64 GetOutputFormat() {
+	uint64_t layout = 0;
+	int32 ourchans = adapi->GetOutputChannels();
+	if (ourchans == 1) {
+		layout = AV_CH_LAYOUT_MONO;
+	} else if (ourchans == 2) {
+		layout = AV_CH_LAYOUT_STEREO;
+	} else if (ourchans == 3) {
+		layout = AV_CH_LAYOUT_2POINT1;
+	} else if (ourchans == 5) {
+		layout = AV_CH_LAYOUT_4POINT1;
+	} else if (ourchans == 6) {
+		layout = AV_CH_LAYOUT_5POINT1;
+	} else if (ourchans == 8) {
+		layout = AV_CH_LAYOUT_7POINT1;
+	}
+	return layout;
 }
 
 bool ffmpeg_Decoder::finishOpen() {
-#if (LIBAVFORMAT_VERSION_MAJOR > 53) || (LIBAVFORMAT_VERSION_MAJOR == 53 && LIBAVFORMAT_VERSION_MINOR >= 6)
-	int err = avformat_find_stream_info(ffmpeg_context, NULL);
-#else
-	int err = av_find_stream_info(ffmpeg_context);
-#endif
-	if (err < 0) {
-		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error getting stream info! (err: %d)\n"), err);
-#ifdef FFMPEG_USE_AVIO
-		avformat_free_context(ffmpeg_context);
+	int32 ourchans = adapi->GetOutputChannels();
+	layout = GetOutputFormat();
+	if (layout == 0) {
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Don\'t know what audio format we are?\n"));
+		avformat_close_input(&ffmpeg_context);
 		if (avio_context) {
 			adj_destroy_read_handle(avio_context);
 		}
-#endif
+		return false; // Couldn't find stream information
+	}
+
+	int err = avformat_find_stream_info(ffmpeg_context, NULL);
+	if (err < 0) {
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error getting stream info! (err: %d)\n"), err);
+		avformat_close_input(&ffmpeg_context);
+		if (avio_context) {
+			adj_destroy_read_handle(avio_context);
+		}
 		return false; // Couldn't find stream information
 	}
 
 #if defined(DEBUG)
-#if (LIBAVFORMAT_VERSION_MAJOR > 52) || (LIBAVFORMAT_VERSION_MAJOR == 52 && LIBAVFORMAT_VERSION_MINOR >= 101)
 	av_dump_format(ffmpeg_context, 0, NULL, 0);
-#else
-	dump_format(ffmpeg_context, 0, NULL, 0);
-#endif
 #endif
 
 	audioStream=-1;
 	int firstAudioStream=-1;
 	for(unsigned int i=0; i < ffmpeg_context->nb_streams; i++) {
-#if LIBAVCODEC_VERSION_MAJOR >= 58
 		if (ffmpeg_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-#elif LIBAVCODEC_VERSION_MAJOR >= 53
-        if (ffmpeg_context->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-#else
-        if (ffmpeg_context->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO) {
-#endif
 			if (firstAudioStream == -1) { firstAudioStream = i; }
-#if (LIBAVUTIL_VERSION_MAJOR > 51) || (LIBAVUTIL_VERSION_MAJOR == 51 && LIBAVUTIL_VERSION_MINOR > 5)
 			if (ffmpeg_context->streams[i]->metadata) {
 				AVDictionaryEntry * scan = av_dict_get(ffmpeg_context->streams[i]->metadata, "language", NULL, 0);
 				if (scan) {
@@ -323,7 +282,6 @@ bool ffmpeg_Decoder::finishOpen() {
 					}
 				}
 			}
-#endif
             audioStream = i;
             break;
         }
@@ -333,64 +291,59 @@ bool ffmpeg_Decoder::finishOpen() {
 	}
 	if (audioStream == -1) {
 		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> No audio stream in file!\n"));
-#ifdef FFMPEG_USE_AVIO
-		avformat_free_context(ffmpeg_context);
+		avformat_close_input(&ffmpeg_context);
 		if (avio_context) {
 			adj_destroy_read_handle(avio_context);
 		}
-#endif
         return false; // Couldn't find stream information
 	}
 
 	adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Using audio stream %d...\n"), audioStream);
 
-//#if LIBAVCODEC_VERSION_MAJOR >= 58
-//	ffmpeg_codecctx = ffmpeg_context->streams[audioStream]->codecpar;
-//#else
-    ffmpeg_codecctx = ffmpeg_context->streams[audioStream]->codec;
-//#endif
+    //ffmpeg_codecctx = ffmpeg_context->streams[audioStream]->codec;
 
-    // Find the decoder for the video stream
-    ffmpeg_codec = avcodec_find_decoder(ffmpeg_codecctx->codec_id);
+    // Find the decoder for the audio stream
+    ffmpeg_codec = avcodec_find_decoder(ffmpeg_context->streams[audioStream]->codecpar->codec_id);
 	if(ffmpeg_codec == NULL) {
-		ffmpeg_codecctx = NULL;
 		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error finding decoder for audio stream!\n"));
-#ifdef FFMPEG_USE_AVIO
-		avformat_free_context(ffmpeg_context);
+		avformat_close_input(&ffmpeg_context);
 		if (avio_context) {
 			adj_destroy_read_handle(avio_context);
 		}
-#endif
         return false; // Couldn't find stream information
 	}
 
-//#if LIBAVCODEC_VERSION_MAJOR < 58
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
+	ffmpeg_codecctx = avcodec_alloc_context3(ffmpeg_codec);
+	// Inform the codec that we can handle truncated bitstreams -- i.e.,
     // bitstreams where frame boundaries can fall in the middle of packets
-	if(ffmpeg_codec->capabilities & AV_CODEC_CAP_TRUNCATED) { ffmpeg_codecctx->flags |= AV_CODEC_FLAG_TRUNCATED; }
-//#endif
+	//if(ffmpeg_codec->capabilities & AV_CODEC_CAP_TRUNCATED) { ffmpeg_codecctx->flags |= AV_CODEC_FLAG_TRUNCATED; }
+
+		/* Copy codec parameters from input stream to output codec context */
+	if ((err = avcodec_parameters_to_context(ffmpeg_codecctx, ffmpeg_context->streams[audioStream]->codecpar)) < 0) {
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Failed to copy %s codec parameters to decoder context\n"), av_get_media_type_string(ffmpeg_codec->type));
+		avcodec_free_context(&ffmpeg_codecctx);
+		avformat_close_input(&ffmpeg_context);
+		if (avio_context) {
+			adj_destroy_read_handle(avio_context);
+		}
+		return false; // Couldn't find stream information
+	}
 
     // Open codec
 	LockMutex(ffmpegMutex);
-#if FFMPEG_USE_AVCODEC_OPEN2
 	err = avcodec_open2(ffmpeg_codecctx, ffmpeg_codec, NULL);
-#else
-	err = avcodec_open(ffmpeg_codecctx, ffmpeg_codec);
-#endif
 	RelMutex(ffmpegMutex);
-	if(err < 0) {
-		ffmpeg_codecctx = NULL;
+	if(err != 0) {
 		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening decoder for audio stream!\n"));
-#ifdef FFMPEG_USE_AVIO
-		avformat_free_context(ffmpeg_context);
+		avcodec_free_context(&ffmpeg_codecctx);
+		avformat_close_input(&ffmpeg_context);
 		if (avio_context) {
 			adj_destroy_read_handle(avio_context);
 		}
-#endif
         return false; // Couldn't find stream information
 	}
 
-	adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Opened with decoder '%s/%s'...\n"), ffmpeg_context->iformat->long_name, ffmpeg_codec->name);
+	adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Opened with decoder '%s/%s'\n"), ffmpeg_context->iformat->long_name, ffmpeg_codec->name);
 
 	if (ffmpeg_context->duration == 0x8000000000000000LL) {
 		song_length = 0;
@@ -400,9 +353,6 @@ bool ffmpeg_Decoder::finishOpen() {
 		song_length = tmp;
 	}
 
-	memset(&curpos, 0, sizeof(curpos));
-	curpos.den = ffmpeg_context->streams[audioStream]->time_base.den;
-	last_channels = last_samplerate = 0;
 
 	return true;
 }
@@ -416,53 +366,20 @@ bool ffmpeg_Decoder::Open(READER_HANDLE * fnIn, int64 startpos) {
 	ffmpeg_codec = NULL;
 	fp = fnIn;
 
-	/*
-	AVInputFormat	iformat;
-	AVFormatParameters ap;
-	memset(&iformat, 0, sizeof(iformat));
-	memset(&ap, 0, sizeof(ap));
-	ap.initial_pause = 1;
-	*/
-
-#ifdef FFMPEG_USE_URLPROTO
-
-	char buf[128];
-	if (sizeof(char *) == 4) {
-		sprintf(buf, "autodj:%u", fnIn);
-	} else {
-		sprintf(buf, "autodj:"U64FMT"", fnIn);
-	}
-
-	LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-	int err = av_open_input_file(&ffmpeg_context, buf, NULL, 0, NULL);
-#else
-	int err = avformat_open_input(&ffmpeg_context, buf, NULL, NULL);
-#endif
-	RelMutex(ffmpegMutex);
-
-#elif defined(FFMPEG_USE_AVIO)
 	ffmpeg_context = avformat_alloc_context();
 	avio_context = adj_create_read_handle(fnIn);
+	ffmpeg_context->pb = avio_context;
 
 	LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-	int err = av_open_input_stream(&ffmpeg_context, avio_context, fnIn->fn, NULL, NULL);
-#else
-	ffmpeg_context->pb = avio_context;
 	int err = avformat_open_input(&ffmpeg_context, fnIn->fn, NULL, NULL);
-#endif
 	RelMutex(ffmpegMutex);
 
-#else
-#error What I/O method to use???
-#endif // FFMPEG_USE_URLPROTO || FFMPEG_USE_AVIO
     if (err != 0) {
-		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file for input! (err: %d)\n"), err);
-#ifdef FFMPEG_USE_AVIO
+		// On error avformat_open_input frees ffmpeg_context
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file %s for input: %s\n"), fnIn->fn, ib_av_strerror(err).c_str());
 		adj_destroy_read_handle(avio_context);
 		avio_context = NULL;
-#endif
+		ffmpeg_context = NULL;
 		return false;
 	}
 
@@ -476,34 +393,16 @@ bool ffmpeg_Decoder::Open_URL(const char * fn, int64 startpos) {
 	ffmpeg_context = NULL;
 	ffmpeg_codecctx = NULL;
 	ffmpeg_codec = NULL;
-
-	//ffmpegf = fnIn;
-	//frameno=0;
-
-	/*
-	AVInputFormat	iformat;
-	AVFormatParameters ap;
-	//memset(&ic, 0, sizeof(ic));
-	memset(&iformat, 0, sizeof(iformat));
-	memset(&ap, 0, sizeof(ap));
-	ap.initial_pause = 1;
-	*/
-
-	//char buf[128];
-	//sprintf(buf, "autodj:%u", fnIn);
-#if defined(FFMPEG_USE_AVIO)
-	ffmpeg_context = avformat_alloc_context();
 	avio_context = NULL;
-#endif
+
+	ffmpeg_context = avformat_alloc_context();
 	LockMutex(ffmpegMutex);
-#ifdef FFMPEG_USE_AV_OPEN_INPUT
-    int err = av_open_input_file(&ffmpeg_context, fn, NULL, 0, NULL);
-#else
 	int err = avformat_open_input(&ffmpeg_context, fn, NULL, NULL);
-#endif
 	RelMutex(ffmpegMutex);
     if (err != 0) {
-		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file for input! (err: %d)\n"), err);
+		// On error avformat_open_input frees ffmpeg_context
+		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error opening file %s for input: %s\n"), fn, ib_av_strerror(err).c_str());
+		ffmpeg_context = NULL;
 		return false;
 	}
 
@@ -516,202 +415,129 @@ int64 ffmpeg_Decoder::GetPosition() { return fp->tell(fp); }
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
-#ifdef FFMPEG_USE_AV_FRAME
-
 int32 ffmpeg_Decoder::Decode() {
 #pragma pack(push)  /* push current alignment to stack */
 #pragma pack(16)    /* set alignment to 16 byte boundary */
 	static int16_t audiobuf[AVCODEC_MAX_AUDIO_FRAME_SIZE/sizeof(int16_t)];
 #pragma pack(pop)   /* restore original alignment from stack */
 
-	AVPacket pkt;
-	memset(&pkt, 0, sizeof(pkt));
 	int ret=0, n=0;
+	bool had_error = false;
 
-	AVFrame *frame = av_frame_alloc();
-	if (frame == NULL) {
-		av_free_packet(&pkt);
-		return 0;
-	}
-
-	SwrContext *swr = swr_alloc();
-	av_opt_set_int(swr, "in_channel_layout",  ffmpeg_codecctx->channel_layout, 0);
-	av_opt_set_int(swr, "out_channel_layout", ffmpeg_codecctx->channel_layout,  0);
-	av_opt_set_int(swr, "in_sample_rate",     ffmpeg_codecctx->sample_rate, 0);
-	av_opt_set_int(swr, "out_sample_rate",    ffmpeg_codecctx->sample_rate, 0);
-	av_opt_set_sample_fmt(swr, "in_sample_fmt",  ffmpeg_codecctx->sample_fmt, 0);
-	av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
-	if ((ret = swr_init(swr)) < 0) {
-		char errbuf[AV_ERROR_MAX_STRING_SIZE]={0};
-		av_strerror(ret, errbuf, sizeof(errbuf));
-		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error initializing swresample: %d -> %s\n"), ret, errbuf);
-		swr_free(&swr);
-		av_frame_free(&frame);
-		av_free_packet(&pkt);
-		return 0;
-	}
-
-	while (ret == 0 && (n = av_read_frame(ffmpeg_context, &pkt)) >= 0) {
+	AVFrame * frame = av_frame_alloc();
+	AVPacket * pkt = av_packet_alloc();
+	uint8_t * outbufs[] = { (uint8_t *)&audiobuf[0] };
+	while (ret == 0 && !had_error && (n = av_read_frame(ffmpeg_context, pkt)) >= 0) {
 		//if (n!=0) { adapi->botapi->ib_printf(_("av_read_frame() -> %d / %d\n"), n, pkt.stream_index); }
-		if (pkt.data == NULL) { av_free_packet(&pkt); continue; }
+		if (pkt->stream_index != audioStream) { av_packet_unref(pkt); continue; }
 
-		if (pkt.stream_index == audioStream) {
-			int got_frame = 0;
-			//int err = avcodec_receive_frame(ffmpeg_codecctx, frame);
-			int err = avcodec_decode_audio4(ffmpeg_codecctx, frame, &got_frame, &pkt);
-			if (err < 0) {
-				av_free_packet(&pkt);
-				adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error decoding audio packet!\n"));
-				continue;
+		n = avcodec_send_packet(ffmpeg_codecctx, pkt);
+		if (n != 0) {
+			adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error decoding audio packet: %s\n"), ib_av_strerror(n).c_str());
+			av_packet_unref(pkt);
+			break;
+		}
+
+		while ((n = avcodec_receive_frame(ffmpeg_codecctx, frame)) >= 0) {
+			if (frameno == 0) {
+#ifdef FFMPEG_USE_CH_LAYOUT
+				if (ffmpeg_codecctx->sample_fmt != AV_SAMPLE_FMT_S16 || adapi->GetOutputChannels() != ffmpeg_codecctx->ch_layout.nb_channels || ffmpeg_codecctx->sample_rate != adapi->GetOutputSample()) {
+#else
+				if (ffmpeg_codecctx->sample_fmt != AV_SAMPLE_FMT_S16 || layout != ffmpeg_codecctx->channel_layout || ffmpeg_codecctx->sample_rate != adapi->GetOutputSample()) {
+#endif
+					swr = swr_alloc();
+#if defined(FFMPEG_USE_CH_LAYOUT)
+					av_opt_set_chlayout(swr, "in_channel_layout", &ffmpeg_codecctx->ch_layout, 0);
+					AVChannelLayout ch_layout = AV_CHANNEL_LAYOUT_STEREO;
+					if (adapi->GetOutputChannels() == 1) {
+						ch_layout = AV_CHANNEL_LAYOUT_MONO;
+					}
+					av_opt_set_chlayout(swr, "out_channel_layout", &ch_layout, 0);
+#else
+					av_opt_set_int(swr, "in_channel_layout", ffmpeg_codecctx->channel_layout, 0);
+					av_opt_set_int(swr, "out_channel_layout", layout, 0);
+#endif
+					av_opt_set_int(swr, "in_sample_rate", ffmpeg_codecctx->sample_rate, 0);
+					av_opt_set_int(swr, "out_sample_rate", adapi->GetOutputSample(), 0);
+					av_opt_set_sample_fmt(swr, "in_sample_fmt", ffmpeg_codecctx->sample_fmt, 0);
+					av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+					if ((n = swr_init(swr)) < 0) {
+						adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error initializing swresample: %d -> %s\n"), n, ib_av_strerror(n).c_str());
+						had_error = true;
+						av_packet_unref(pkt);
+						break;
+					}
+#ifdef DEBUG
+					char buf[64] = { 0 };
+#ifdef FFMPEG_USE_CH_LAYOUT
+					av_channel_layout_describe(&ffmpeg_codecctx->ch_layout, buf, sizeof(buf));
+#else
+					av_get_channel_layout_string(buf, sizeof(buf), ffmpeg_codecctx->channels, ffmpeg_codecctx->channel_layout);
+#endif
+					adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Resampling from %dkHz %s to %dkHz %d channels\n"), ffmpeg_codecctx->sample_rate, buf, adapi->GetOutputSample(), adapi->GetOutputChannels());
+#endif
+				}
 			}
 
-			if (got_frame == 0) {
-				adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error decoding audio frame!\n"));
-				av_free_packet(&pkt);
-				continue;
-			}
-
-			uint8_t * outbufs[] = { (uint8_t *)&audiobuf[0] };
-			int size = swr_convert(swr, outbufs, sizeof(audiobuf) / sizeof(int16_t) / ffmpeg_codecctx->channels, (const uint8_t **)frame->extended_data, frame->nb_samples);
-			if (size <= 0) {
-				adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error resampling audio frame!\n"));
-				av_free_packet(&pkt);
-				continue;
-			}
-			size = size * ffmpeg_codecctx->channels;
-
-			if (ffmpeg_codecctx->channels < 1 || ffmpeg_codecctx->channels > 2) {
-				//av_free_packet(&pkt);
-				//adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> AutoDJ only supports 1 or 2 channel audio!\n"));
-				//return 0;
-			}
-			if (frameno == 0 || last_channels != ffmpeg_codecctx->channels || last_samplerate != ffmpeg_codecctx->sample_rate) {
-				last_channels	= ffmpeg_codecctx->channels;
-				last_samplerate	= ffmpeg_codecctx->sample_rate;
-				if (!adapi->GetDeck(deck)->SetInAudioParams(ffmpeg_codecctx->channels, ffmpeg_codecctx->sample_rate)) {
-					adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> setInAudioParam(%d,%d) returned false!\n"), ffmpeg_codecctx->channels, ffmpeg_codecctx->sample_rate);
-					av_free_packet(&pkt);
+			int size = frame->nb_samples;
+			if (swr != NULL) {
+				size = swr_convert(swr, outbufs, sizeof(audiobuf) / sizeof(int16_t) / adapi->GetOutputChannels(), (const uint8_t **)frame->extended_data, frame->nb_samples);
+				if (size <= 0) {
+					adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error resampling audio frame!\n"));
+					av_packet_unref(pkt);
+					had_error = true;
 					break;
 				}
 			}
-			frameno++;
 
-			ret = adapi->GetDeck(deck)->AddSamples(audiobuf, size / ffmpeg_codecctx->channels);
-
-			curpos.num += pkt.duration;
-			while (curpos.num >= curpos.den && curpos.den) {
-				curpos.val++;
-				curpos.num -= curpos.den;
-			}
-		}
-
-		av_free_packet(&pkt);
-	}
-#ifdef FFMPEG_USE_AV_FRAME
-	swr_free(&swr);
-	av_frame_free(&frame);
-#endif
-	return ret;
-}
-
-#else // FFMPEG_USE_AV_FRAME
-
-int32 ffmpeg_Decoder::Decode() {
-#pragma pack(push)  /* push current alignment to stack */
-#pragma pack(16)    /* set alignment to 16 byte boundary */
-	static int16_t audiobuf[AVCODEC_MAX_AUDIO_FRAME_SIZE/sizeof(int16_t)];
-#pragma pack(pop)   /* restore original alignment from stack */
-
-	AVPacket pkt;
-	memset(&pkt, 0, sizeof(pkt));
-	int ret=0, n=0;
-
-	while (ret == 0 && (n = av_read_frame(ffmpeg_context, &pkt)) >= 0) {
-		if (n!=0) { adapi->botapi->ib_printf(_("av_read_frame() -> %d / %d\n"), n, pkt.stream_index); }
-		if (pkt.data == NULL) { av_free_packet(&pkt); continue; }
-
-		if (pkt.stream_index == audioStream) {
-			int size = sizeof(audiobuf);//AVCODEC_MAX_AUDIO_FRAME_SIZE
-#if LIBAVCODEC_VERSION_MAJOR >= 53
-			int err = avcodec_decode_audio3(ffmpeg_codecctx, (int16_t *)&audiobuf, &size, &pkt);
-#else
-			int err = avcodec_decode_audio2(ffmpeg_codecctx, (int16_t *)&audiobuf, &size, pkt.data, pkt.size);
-#endif
-			if (err < 0) {
-				av_free_packet(&pkt);
-				adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> Error decoding audio packet!\n"));
-				continue;
-			}
-
-			if (size == 0) {
-				av_free_packet(&pkt);
-				continue;
-			}
-
-			if (ffmpeg_codecctx->channels < 1 || ffmpeg_codecctx->channels > 2) {
-				//av_free_packet(&pkt);
-				//adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> AutoDJ only supports 1 or 2 channel audio!\n"));
-				//return 0;
-			}
-			if (frameno == 0 || last_channels != ffmpeg_codecctx->channels || last_samplerate != ffmpeg_codecctx->sample_rate) {
-				last_channels	= ffmpeg_codecctx->channels;
-				last_samplerate	= ffmpeg_codecctx->sample_rate;
-				if (!adapi->GetDeck(deck)->SetInAudioParams(ffmpeg_codecctx->channels, ffmpeg_codecctx->sample_rate)) {
-					av_free_packet(&pkt);
-					adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> setInAudioParam(%d,%d) returned false!\n"), ffmpeg_codecctx->channels, ffmpeg_codecctx->sample_rate);
-					return 0;
+			if (size > 0) {
+				if (frameno == 0) {
+					if (!adapi->GetDeck(deck)->SetInAudioParams(adapi->GetOutputChannels(), adapi->GetOutputSample())) {
+						adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> setInAudioParam(%d,%d) returned false!\n"), adapi->GetOutputChannels(), adapi->GetOutputSample());
+						av_packet_unref(pkt);
+						had_error = true;
+						break;
+					}
 				}
-			}
-			frameno++;
+				frameno++;
 
-			int slen = size / sizeof(int16_t);
-			ret = adapi->GetDeck(deck)->AddSamples(audiobuf, slen / ffmpeg_codecctx->channels);
-
-			curpos.num += pkt.duration;
-			while (curpos.num >= curpos.den && curpos.den) {
-				curpos.val++;
-				curpos.num -= curpos.den;
+				if ((n = adapi->GetDeck(deck)->AddSamples(audiobuf, size)) <= 0) {
+					av_packet_unref(pkt);
+					had_error = true;
+					break;
+				}
+				ret += n;
 			}
 		}
 
-		av_free_packet(&pkt);
+		av_packet_unref(pkt);
 	}
+	av_packet_free(&pkt);
+	av_frame_free(&frame);
 	return ret;
 }
-
-#endif // FFMPEG_USE_AV_FRAME
 
 void ffmpeg_Decoder::Close() {
 	//adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_decoder) -> ffmpeg_close()\n"));
+	if (swr != NULL) {
+		swr_free(&swr);
+	}
 	if (ffmpeg_codecctx) {
 		LockMutex(ffmpegMutex);
 		avcodec_close(ffmpeg_codecctx);
+		avcodec_free_context(&ffmpeg_codecctx);
 		RelMutex(ffmpegMutex);
 		ffmpeg_codecctx = NULL;
 	}
 	if (ffmpeg_context) {
 		LockMutex(ffmpegMutex);
-#if defined(FFMPEG_USE_AV_OPEN_INPUT) && defined(FFMPEG_USE_AVIO)
-		if (avio_context) {
-			av_close_input_stream(ffmpeg_context);
-		} else {
-			av_close_input_file(ffmpeg_context);
-		}
-#elif (LIBAVFORMAT_VERSION_MAJOR > 53) || (LIBAVFORMAT_VERSION_MAJOR == 53 && LIBAVFORMAT_VERSION_MINOR >= 17)
 		avformat_close_input(&ffmpeg_context);
-#else
-		av_close_input_file(ffmpeg_context);
-#endif
 		RelMutex(ffmpegMutex);
-		ffmpeg_context = NULL;
 	}
-#ifdef FFMPEG_USE_AVIO
 	if (avio_context) {
 		adj_destroy_read_handle(avio_context);
 		avio_context = NULL;
 	}
-#endif
-	//adapi->Timing_Done();
 }
 
 AutoDJ_Decoder * ffmpeg_create() { return new ffmpeg_Decoder; }

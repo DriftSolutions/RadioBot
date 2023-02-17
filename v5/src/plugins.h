@@ -494,6 +494,21 @@ typedef struct {
 #ifndef DOXYGEN_SKIP
 // case-independent (ci) string less_than
 // returns true if s1 < s2
+#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+struct ci_less {
+	struct nocase_compare {
+		bool operator() (const unsigned char& c1, const unsigned char& c2) const {
+			return tolower(c1) < tolower(c2);
+		}
+	};
+	bool operator() (const std::string & s1, const std::string & s2) const {
+		return std::lexicographical_compare
+		(s1.begin(), s1.end(),   // source range
+			s2.begin(), s2.end(),   // dest range
+			nocase_compare());  // comparison
+	}
+};
+#else
 struct ci_less : binary_function<string, string, bool> {
 
   // case-independent (ci) compare_less binary function
@@ -512,6 +527,7 @@ struct ci_less : binary_function<string, string, bool> {
                 nocase_compare ());  // comparison
     }
 }; // end of ci_less
+#endif
 
 typedef std::map<std::string, std::string, ci_less> sql_row;
 typedef std::map<int, sql_row> sql_rows;

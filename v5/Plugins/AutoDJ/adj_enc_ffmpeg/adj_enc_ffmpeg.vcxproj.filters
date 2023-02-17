@@ -21,9 +21,6 @@
     <ClCompile Include="ffmpeg_decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ffmpeg_urlproto.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ffmpeg_avio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

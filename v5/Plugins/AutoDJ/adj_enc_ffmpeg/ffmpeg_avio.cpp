@@ -1,7 +1,7 @@
 //@AUTOHEADER@BEGIN@
 /**********************************************************************\
 |                          ShoutIRC RadioBot                           |
-|           Copyright 2004-2020 Drift Solutions / Indy Sams            |
+|           Copyright 2004-2023 Drift Solutions / Indy Sams            |
 |        More information available at https://www.shoutirc.com        |
 |                                                                      |
 |                    This file is part of RadioBot.                    |
@@ -22,7 +22,6 @@
 //@AUTOHEADER@END@
 
 #include "ffmpeg_codec.h"
-#ifdef FFMPEG_USE_AVIO
 
 #define AVIO_BUFFER_SIZE 32768
 
@@ -96,4 +95,3 @@ void adj_destroy_write_handle(AVIOContext *h) {
 	av_free(h);
 }
 
-#endif
