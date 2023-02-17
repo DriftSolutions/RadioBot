@@ -102,13 +102,11 @@ bool FFMPEG_Encoder::Init(int channels, int samplerate, float scale) {
 	}
 
 	/* allocate the output media context */
-	oc = avformat_alloc_context();
-	if (oc == NULL) {
+	if (avformat_alloc_output_context2(&oc, fmt, NULL, NULL) < 0 || oc == NULL) {
 		adapi->botapi->ib_printf(_("AutoDJ (ffmpeg_encoder) -> Could not allocate format context!\n"));
 		Close();
 		return false;
 	}
-	oc->oformat = fmt;
 
 	AVCodecID acodec = fmt->audio_codec;
 	if (codec[0]) {
