@@ -33,7 +33,11 @@ private:
 	bool first_encode = true;
 	Audio_Buffer * ab = NULL;
 
+#if (LIBAVFORMAT_VERSION_MAJOR > 58) || (LIBAVFORMAT_VERSION_MAJOR == 58 && LIBAVFORMAT_VERSION_MINOR >= 26)
 	const AVOutputFormat * fmt = NULL;
+#else
+	AVOutputFormat * fmt = NULL;
+#endif
 	AVFormatContext * oc = NULL;
 	AVStream * ast = NULL;
 	AVCodecContext * codec_ctx = NULL;
@@ -340,8 +344,7 @@ int FFmpegEncoderCommands(const char * command, const char * parms, USER_PRESENC
 		FILE * fp = fopen("oformats.txt", "wb");
 		if (fp) {
 			void *fmt_iter = NULL;
-			const AVOutputFormat * cur = NULL;
-			while (cur = av_muxer_iterate(&fmt_iter)) {
+			while (auto cur = av_muxer_iterate(&fmt_iter)) {
 				fprintf(fp, "\r\n%s : %s\r\n", cur->name, cur->long_name);
 				if (cur->mime_type) {
 					fprintf(fp, "\tMime Type: %s\r\n", cur->mime_type);
@@ -370,8 +373,7 @@ int FFmpegEncoderCommands(const char * command, const char * parms, USER_PRESENC
 		FILE * fp = fopen("encoders.txt", "wb");
 		if (fp) {
 			void *fmt_iter = NULL;
-			const AVCodec * cur = NULL;
-			while (cur = av_codec_iterate(&fmt_iter)) {
+			while (auto cur = av_codec_iterate(&fmt_iter)) {
 				if (av_codec_is_encoder(cur)) {
 					fprintf(fp, "%s : %s\r\n", cur->name, cur->long_name);
 				}
