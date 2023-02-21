@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8.12)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
 message(STATUS "Overriding compilers for OpenBSD...")
