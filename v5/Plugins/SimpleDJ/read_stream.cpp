@@ -106,7 +106,7 @@ int32 read_stream_read(void * buf, int32 size, READER_HANDLE * fp) {
 						}
 					}
 				}
-				delete str;
+				delete[] str;
 			}
 			hs->meta_ind=0;
 		}

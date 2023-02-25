@@ -212,6 +212,7 @@ private:
 	bool finishOpen();
 public:
 	ffmpeg_Decoder();
+	virtual ~ffmpeg_Decoder(){} // just for compiler warnings
 	virtual bool Open(READER_HANDLE * fpp, int64 startpos);
 	virtual bool Open_URL(const char * url, int64 startpos);
 	virtual int64 GetPosition();

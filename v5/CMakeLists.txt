@@ -106,6 +106,7 @@ OptTest(-Wstack-protector)
 OptTest(-Wno-pragmas)
 OptTest(-Wno-write-strings)
 OptTest(-Wno-format-contains-nul)
+OptTest(-Wno-c++11-narrowing)
 OptTest(-Werror=format-security)
 OptTest(-Werror=format-extra-args)
 

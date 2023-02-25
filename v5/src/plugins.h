@@ -494,7 +494,7 @@ typedef struct {
 #ifndef DOXYGEN_SKIP
 // case-independent (ci) string less_than
 // returns true if s1 < s2
-#if __cplusplus >= 202002L || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#if __cplusplus >= 201103L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201103L)
 struct ci_less {
 	struct nocase_compare {
 		bool operator() (const unsigned char& c1, const unsigned char& c2) const {

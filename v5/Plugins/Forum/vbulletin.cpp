@@ -176,7 +176,7 @@ void vbulletin_PostToThread(FORUM_POST * po) {
 		inst->conx->Query(sstr3.str().c_str());
 		inst->conx->Query(sstr4.str().c_str());
 	} else {
-		api->ib_printf(_("Forum[%d] -> Error posting: %s\n"), inst->id, inst->conx->GetErrorString());
+		api->ib_printf(_("Forum[%d] -> Error posting: %s\n"), inst->id, inst->conx->GetErrorString().c_str());
 	}
 }
 
@@ -197,7 +197,7 @@ void vbulletin_SendPM(FORUM_POST * po) {
 		inst->conx->Query(sstr2.str().c_str());
 		inst->conx->Query(sstr3.str().c_str());
 	} else {
-		api->ib_printf(_("Forum[%d] -> Error PMing: %s\n"), inst->id, inst->conx->GetErrorString());
+		api->ib_printf(_("Forum[%d] -> Error PMing: %s\n"), inst->id, inst->conx->GetErrorString().c_str());
 	}
 }
 
