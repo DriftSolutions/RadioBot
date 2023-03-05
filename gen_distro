@@ -1,0 +1,177 @@
+#!/bin/bash
+
+PLATFORM=Unknown
+PKGCHK="rpm -q"
+MAKE=make
+
+if [ -f /etc/fedora-release ]; then
+	PLATFORM=fc`awk '{print $3}' /etc/fedora-release`
+fi;
+
+if [ -f /etc/arch-release ]; then
+	PLATFORM=arch
+fi;
+
+if [ -f /etc/redhat-release ]; then
+	RELEASE=`grep 'CentOS release 4.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos4"
+	fi;
+	RELEASE=`grep 'CentOS release 5.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos5"
+	fi;
+	RELEASE=`grep 'CentOS Linux release 6.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos6"
+	fi;
+	RELEASE=`grep 'CentOS Linux release 7.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos7"
+	fi;
+	RELEASE=`grep 'CentOS release 6.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos6"
+	fi;
+	RELEASE=`grep 'Scientific Linux release 5.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos5"
+	fi;
+	RELEASE=`grep 'Scientific Linux release 6.' /etc/redhat-release`
+	if [ $? -eq 0 ]; then
+		PLATFORM="centos6"
+	fi;
+fi;
+
+if [ -f /etc/debian_version ]; then
+	PLATFORM="debian"
+	RELEASE=`grep '12.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian12"
+	fi
+	RELEASE=`grep '11.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian11"
+	fi
+	RELEASE=`grep '10.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian10"
+	fi
+	RELEASE=`grep '9.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian9"
+	fi
+	RELEASE=`grep '8.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian8"
+	fi
+	RELEASE=`grep '7.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian7"
+	fi
+	RELEASE=`grep '6.' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian6"
+	fi
+	RELEASE=`grep '5.0' /etc/debian_version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="debian5"
+	fi
+	PKGCHK="dpkg -s"
+fi;
+
+if [ -f /proc/version ]; then
+	RELEASE=`grep 'Ubuntu' /proc/version`
+	if [ $? -eq 0 ]; then
+		source /etc/lsb-release
+		PLATFORM="ubuntu-${DISTRIB_CODENAME}"
+		PKGCHK="dpkg -s"
+#		RELEASE=`grep -s 'ubuntu-lts' /etc/hostname`
+#		if [ $? -eq 0 ]; then
+#			PLATFORM="ubuntu-lts"
+#		fi;
+#		RELEASE=`grep -s 'ubuntu-oldlts' /etc/hostname`
+#		if [ $? -eq 0 ]; then
+#			PLATFORM="ubuntu-oldlts"
+#		fi;
+	fi;
+	RELEASE=`grep 'SUSE' /proc/version`
+	if [ $? -eq 0 ]; then
+		PLATFORM="suse"
+	fi;
+fi;
+
+RELEASE=`uname | grep 'FreeBSD'`
+if [ $? -eq 0 ]; then
+	RELEASE=`uname -r | grep '7.'`
+	if [ $? -eq 0 ]; then
+		PLATFORM="freebsd7"
+	fi;
+	RELEASE=`uname -r | grep '8.'`
+	if [ $? -eq 0 ]; then
+		PLATFORM="freebsd8"
+	fi;
+	RELEASE=`uname -r | grep '9.'`
+	if [ $? -eq 0 ]; then
+		PLATFORM="freebsd9"
+	fi;
+	MAKE="gmake"
+	PKGCHK=
+fi;
+
+RELEASE=`uname | grep 'OpenBSD'`
+if [ $? -eq 0 ]; then
+	RELEASE=`uname -r | grep '4.'`
+	if [ $? -eq 0 ]; then
+		PLATFORM="openbsd4"
+	fi;
+	RELEASE=`uname -r | grep '5.'`
+	if [ $? -eq 0 ]; then
+		PLATFORM="openbsd5"
+	fi;
+	MAKE="gmake"
+	PKGCHK=
+fi;
+
+RELEASE=`uname | grep 'NetBSD'`
+if [ $? -eq 0 ]; then
+	PLATFORM="netbsd"
+	MAKE="gmake"
+	PKGCHK=
+fi;
+
+RELEASE=`uname | grep 'Darwin'`
+if [ $? -eq 0 ]; then
+	PLATFORM="macosx"
+	MAKE="gmake"
+	PKGCHK=
+fi;
+
+if [ "$PLATFORM" = "Unknown" ]; then
+	echo Error detecting platform!
+	exit;
+fi;
+
+
+
+MACHINE=`uname -m`
+if [ "$MACHINE" != "i386" ]; then
+if [ "$MACHINE" != "i586" ]; then
+if [ "$MACHINE" != "i686" ]; then
+	TMP=${PLATFORM}
+	PLATFORM=${TMP}.${MACHINE}
+fi;
+fi;
+fi;
+
+echo Detected Platform: $PLATFORM
+echo Detected Make: $MAKE
+echo Detected Package Check Command: $PKGCHK
+
+echo "#define DISTRO \"${PLATFORM}\"" > distro.h
+echo "#define CHECK_PKG \"${PKGCHK}\"" >> distro.h
+
+echo "PLATFORM=\"${PLATFORM}\"" > distro.sh
+echo "PKGCHK=\"${PKGCHK}\"" >> distro.sh
+echo "MAKE=\"${MAKE}\"" >> distro.sh
+
