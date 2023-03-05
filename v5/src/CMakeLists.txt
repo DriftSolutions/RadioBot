@@ -9,6 +9,6 @@ TARGET_LINK_LIBRARIES(radiobot ${LIBS} physfs tinyxml-static zip-static z protob
 add_custom_command(
 	TARGET radiobot
         POST_BUILD
-        COMMAND ../Output/add_checksum ../Output/radiobot
+        COMMAND ${EXECUTABLE_OUTPUT_PATH}/add_checksum ${EXECUTABLE_OUTPUT_PATH}/radiobot
 )
 

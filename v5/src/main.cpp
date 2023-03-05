@@ -31,7 +31,7 @@
 #define DISTRO "win32"
 #else
 #include <getopt.h>
-#include "../distro.h"
+#include "../../distro.h"
 #endif
 
 #if defined(WIN32)

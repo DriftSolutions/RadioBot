@@ -22,15 +22,13 @@
 //@AUTOHEADER@END@
 
 #include "autodj.h"
+#include <autodj.pb.h>
 #if defined(WIN32)
-#include "../../../Common/autodj.pb.h"
-#if defined(DEBUG)
-#pragma comment(lib, "libprotobuf_d.lib")
-#else
-#pragma comment(lib, "libprotobuf.lib")
-#endif
-#else
-#include "../../src/proto_linux/autodj.pb.h"
+	#if defined(DEBUG)
+		#pragma comment(lib, "libprotobuf_d.lib")
+	#else
+		#pragma comment(lib, "libprotobuf.lib")
+	#endif
 #endif
 
 #define STATE_VERSION 2

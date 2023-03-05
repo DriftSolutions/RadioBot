@@ -26,17 +26,13 @@
 #define ENABLE_OPENSSL
 #endif
 #include <drift/dsl.h>
-#ifdef WIN32
-#include "proto_win32/Mumble.pb.h"
-#else
-#include "../../src/proto_linux/mumble.pb.h"
-#endif
+#include <mumble.pb.h>
 
 #if defined(WIN32)
 	#if defined(DEBUG)
-	#pragma comment(lib, "libprotobuf_d.lib")
+		#pragma comment(lib, "libprotobuf_d.lib")
 	#else
-	#pragma comment(lib, "libprotobuf.lib")
+		#pragma comment(lib, "libprotobuf.lib")
 	#endif
 #endif
 
