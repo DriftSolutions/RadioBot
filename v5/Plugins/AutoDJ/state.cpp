@@ -22,13 +22,15 @@
 //@AUTOHEADER@END@
 
 #include "autodj.h"
-#include <autodj.pb.h>
 #if defined(WIN32)
+	#include "../../../Common/autodj.pb.h"
 	#if defined(DEBUG)
 		#pragma comment(lib, "libprotobuf_d.lib")
 	#else
 		#pragma comment(lib, "libprotobuf.lib")
 	#endif
+#else
+#include <autodj.pb.h>
 #endif
 
 #define STATE_VERSION 2
@@ -83,18 +85,18 @@ bool SerializeQueue(QUEUE * q, pbQUEUE &s) {
 	return true;
 }
 
-char * SerializeQueue(QUEUE * q, int * size) {
+char * SerializeQueue(QUEUE * q, size_t * size) {
 	pbQUEUE s;
 	if (!SerializeQueue(q, s)) {
 		return NULL;
 	}
-	*size = s.ByteSize();
+	*size = s.ByteSizeLong();
 	char * ret = (char *)zmalloc(*size);
 	s.SerializeToArray(ret, *size);
 	return ret;
 }
 
-char * SerializeQueueList(QUEUE * q, int * size) {
+char * SerializeQueueList(QUEUE * q, size_t * size) {
 	pbQUEUE_LIST list;
 	QUEUE * Scan = q;
 	while (Scan != NULL) {
@@ -105,13 +107,13 @@ char * SerializeQueueList(QUEUE * q, int * size) {
 		}
 		Scan = Scan->Next;
 	}
-	*size = list.ByteSize();
+	*size = list.ByteSizeLong();
 	char * ret = (char *)zmalloc(*size);
 	list.SerializeToArray(ret, *size);
 	return ret;
 }
 
-QUEUE * UnserializeQueue(const char * buf, int size) {
+QUEUE * UnserializeQueue(const char * buf, size_t size) {
 	pbQUEUE s;
 	if (s.ParseFromArray(buf, size)) {
 		QUEUE * ret = AllocQueue();
@@ -170,7 +172,7 @@ QUEUE * UnserializeQueue(const char * buf, int size) {
 	return NULL;
 }
 
-QUEUE * UnserializeQueueList(const char * buf, int size) {
+QUEUE * UnserializeQueueList(const char * buf, size_t size) {
 	pbQUEUE_LIST s;
 	QUEUE *ret = NULL, *lQue=NULL;
 	if (s.ParseFromArray(buf, size)) {
@@ -346,12 +348,13 @@ void SaveState() {
 	FILE * fp = fopen("./backup/adj.requests.state", "wb");
 	if (fp != NULL) {
 		fwrite(&ver1, sizeof(ver1), 1, fp);
-		int size = 0;
+		size_t size = 0;
 		char * txt = SerializeQueueList(rQue, &size);
 		if (txt && size > 0) {
 			fwrite(&size, sizeof(size), 1, fp);
 			fwrite(txt, size, 1, fp);
 		}
+		zfree(txt);
 		fclose(fp);
 	} else {
 		api->ib_printf(_("AutoDJ -> Error opening ./backup/adj.requests.state\n"));
@@ -360,12 +363,13 @@ void SaveState() {
 	fp = fopen("./backup/adj.main.state", "wb");
 	if (fp != NULL) {
 		fwrite(&ver1, sizeof(ver1), 1, fp);
-		int size = 0;
+		size_t size = 0;
 		char * txt = SerializeQueueList(pQue, &size);
 		if (txt && size > 0) {
 			fwrite(&size, sizeof(size), 1, fp);
 			fwrite(txt, size, 1, fp);
 		}
+		zfree(txt);
 		fclose(fp);
 	} else {
 		api->ib_printf(_("AutoDJ -> Error opening ./backup/adj.main.state\n"));
@@ -374,12 +378,13 @@ void SaveState() {
 	fp = fopen("./backup/adj.nextsong.state", "wb");
 	if (fp != NULL) {
 		fwrite(&ver1, sizeof(ver1), 1, fp);
-		int size = 0;
+		size_t size = 0;
 		char * txt = SerializeQueue(ad_config.nextSong, &size);
 		if (txt && size > 0) {
 			fwrite(&size, sizeof(size), 1, fp);
 			fwrite(txt, size, 1, fp);
 		}
+		zfree(txt);
 		fclose(fp);
 	} else {
 		api->ib_printf(_("AutoDJ -> Error opening ./backup/adj.nextsong.state\n"));

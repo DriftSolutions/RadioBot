@@ -22,13 +22,15 @@
 //@AUTOHEADER@END@
 
 #include "ircbot.h"
-#include <remote_protobuf.pb.h>
 #if defined(WIN32)
+	#include "../../Common/remote_protobuf.pb.h"
 	#if defined(DEBUG)
 		#pragma comment(lib, "libprotobuf_d.lib")
 	#else
 		#pragma comment(lib, "libprotobuf.lib")
 	#endif
+#else
+#include <remote_protobuf.pb.h>
 #endif
 
 template <class T>
