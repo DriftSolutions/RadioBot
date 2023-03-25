@@ -35,6 +35,6 @@ SET(THISPLUG AutoDJ)
 SET(PLUGLIBS tinyxml-static)
 AUX_SOURCE_DIRECTORY(. SRCFILES)
 AUX_SOURCE_DIRECTORY(./resample RESAMPLEFILES)
-add_library (${THISPLUG} MODULE ${SRCFILES} ${RESAMPLEFILES} ../../src/proto_linux/autodj.pb.cc)
+add_library (${THISPLUG} MODULE ${SRCFILES} ${RESAMPLEFILES} ${PROJECT_BINARY_DIR}/proto_linux/autodj.pb.cc)
 include(../plugin_post_common.txt)
 

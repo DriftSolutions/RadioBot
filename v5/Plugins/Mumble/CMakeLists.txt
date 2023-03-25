@@ -5,7 +5,7 @@ SET(THISPLUG Mumble)
 SET(PLUGLIBS protobuf)
 
 AUX_SOURCE_DIRECTORY(. SRCFILES)
-add_library (${THISPLUG} MODULE ${SRCFILES} ../../src/proto_linux/mumble.pb.cc)
+add_library (${THISPLUG} MODULE ${SRCFILES} ${PROJECT_BINARY_DIR}/proto_linux/mumble.pb.cc)
 include(../plugin_post_common.txt)
 
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL FreeBSD OR CMAKE_SYSTEM_NAME STREQUAL OpenBSD)

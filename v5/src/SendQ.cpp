@@ -63,7 +63,7 @@ Titus_Mutex sqMutex;
 PriorityQueueType PriorityQueue;
 // immediate buffers
 Titus_Mutex sqBufferMutex;
-std::map<T_SOCKET *, QueueBuffer> buffers;
+std::map<T_SOCKET *, shared_ptr<QueueBuffer>> buffers;
 
 SENDQ_STATS sq_stats;
 SENDQ_STATS * SendQ_GetStats() { return &sq_stats; }
@@ -216,8 +216,8 @@ void SendQ_ClearSockEntries(T_SOCKET * sock) {
 	AutoMutex(sqBufferMutex);
 	auto x = buffers.find(sock);
 	if (x != buffers.end()) {
-		buffer_clear(&x->second.buffer);
-		x->second.ref_cnt = 0;
+		buffer_clear(&x->second->buffer);
+		x->second->ref_cnt = 0;
 	}
 }
 
@@ -339,8 +339,7 @@ THREADTYPE SendQ_Thread(void * lpData) {
 #ifdef DEBUG
 					ib_printf("SendQ[%p]: Creating buffer...\n", curque->first);
 #endif
-					QueueBuffer buf;
-					buffers[curque->first] = buf;
+					buffers[curque->first] = make_shared<QueueBuffer>();
 				}
 			}
 			sqMutex.Release();
@@ -353,15 +352,15 @@ THREADTYPE SendQ_Thread(void * lpData) {
 					continue;
 				}
 
-				while (cursock->second.buffer.len < config.base.sendq) {
+				while (cursock->second->buffer.len < config.base.sendq) {
 					SENDQ_QUEUE * Scan = SendQ_GetNextEntry(cursock->first, true);
 					if (Scan == NULL) {
 						// no more data for this socket, quit looking
 						break;
 					}
 
-					cursock->second.netno = Scan->netno;
-					buffer_append(&cursock->second.buffer, Scan->data, Scan->len);
+					cursock->second->netno = Scan->netno;
+					buffer_append(&cursock->second->buffer, Scan->data, Scan->len);
 #ifdef DEBUG
 					if (Scan->netno >= 0) {
 						ib_printf("SendQ[%p]: IRC[%d]: Added %d bytes: %s", cursock->first, Scan->netno, Scan->len, Scan->data);
@@ -372,15 +371,15 @@ THREADTYPE SendQ_Thread(void * lpData) {
 					SendQ_Delete(Scan);
 				}
 
-				if (cursock->second.buffer.len > 0) {
-					cursock->second.ref_cnt = CLEANUP_AFTER;
+				if (cursock->second->buffer.len > 0) {
+					cursock->second->ref_cnt = CLEANUP_AFTER;
 					if (config.sockets->IsKnownSocket(cursock->first) && config.sockets->Select_Write(cursock->first, uint32(0)) == 1) {
 						int toSend = config.base.sendq;
-						if (cursock->second.buffer.len < toSend) { toSend = cursock->second.buffer.len; }
+						if (cursock->second->buffer.len < toSend) { toSend = cursock->second->buffer.len; }
 #ifdef DEBUG
-						printf("SendQ[%p]: Sending %d bytes of " I64FMT "...\n", cursock->first, toSend, cursock->second.buffer.len);
+						printf("SendQ[%p]: Sending %d bytes of " I64FMT "...\n", cursock->first, toSend, cursock->second->buffer.len);
 #endif
-						toSend = config.sockets->Send(cursock->first, cursock->second.buffer.data, toSend, false);
+						toSend = config.sockets->Send(cursock->first, cursock->second->buffer.data, toSend, false);
 						if (toSend <= 0) {
 							ib_printf("SendQ[%p]: Send returned %d\n", cursock->first, toSend);
 							SendQ_ClearSockEntries(cursock->first);
@@ -388,13 +387,13 @@ THREADTYPE SendQ_Thread(void * lpData) {
 							continue;
 						}
 
-						if (cursock->second.netno >= 0) {
+						if (cursock->second->netno >= 0) {
 							sq_stats.bytesSentIRC += toSend;
 						} else {
 							sq_stats.bytesSent += toSend;
 						}
 
-						buffer_remove_front(&cursock->second.buffer, toSend);
+						buffer_remove_front(&cursock->second->buffer, toSend);
 
 #ifdef DEBUG
 						printf("SendQ[%p]: Sent %d bytes.\n", cursock->first, toSend);
@@ -404,7 +403,7 @@ THREADTYPE SendQ_Thread(void * lpData) {
 			}
 
 			for (auto x = buffers.begin(); x != buffers.end();) {
-				if (x->second.buffer.len == 0 && (config.shutdown_sendq || x->second.ref_cnt-- <= 0)) {
+				if (x->second->buffer.len == 0 && (config.shutdown_sendq || x->second->ref_cnt-- <= 0)) {
 #ifdef DEBUG
 					ib_printf("SendQ[%p]: Deleting buffer...\n", x->first);
 #endif

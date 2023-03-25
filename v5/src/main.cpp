@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
 #if defined(WIN32)
 	SetConsoleOutputCP(OldCP);
 #endif
-#if defined(WIN32)
+#if defined(WIN32) && !defined(DEBUG)
 	if (ret != 0) {
 		system("pause");
 	}
@@ -546,9 +546,8 @@ int BotMain(int argc, char *argv[]) {
 
 		//ib_printf("Starting IRCBot %s%s/%s\n",(VERSION & IRCBOT_VERSION_FLAG_LITE) ? "Lite ":"", GetBotVersionString(), PLATFORM);
 		ib_printf("%s: Loading configuration...\n", IRCBOT_NAME);
-
 		if (!config.config->LoadConfig((char *)config.base.fnConf.c_str())) {
-			printf("%s: Error reading %s!\n", IRCBOT_NAME, nopath(config.base.fnConf.c_str()));
+			printf("%s: Error reading %s: %s\n", IRCBOT_NAME, nopath(config.base.fnConf.c_str()), strerror(errno));
 			delete config.sockets;
 			delete config.config;
 			dsl_cleanup();
