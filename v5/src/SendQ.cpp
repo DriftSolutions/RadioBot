@@ -24,6 +24,7 @@
 #include "ircbot.h"
 #if defined(IRCBOT_ENABLE_IRC)
 #include "SendQ.h"
+#include <memory>
 #define SENDQ_MEMLEAK
 
 /** \struct SENDQ_QUEUE
