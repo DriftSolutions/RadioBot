@@ -216,7 +216,7 @@ public:
 	virtual bool Open(READER_HANDLE * fpp, int64 startpos);
 	virtual bool Open_URL(const char * url, int64 startpos);
 	virtual int64 GetPosition();
-	virtual int32 Decode();
+	virtual DECODE_RETURN Decode();
 	virtual void Close();
 };
 
@@ -416,7 +416,7 @@ int64 ffmpeg_Decoder::GetPosition() { return fp->tell(fp); }
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
-int32 ffmpeg_Decoder::Decode() {
+DECODE_RETURN ffmpeg_Decoder::Decode() {
 #pragma pack(push)  /* push current alignment to stack */
 #pragma pack(16)    /* set alignment to 16 byte boundary */
 	static int16_t audiobuf[AVCODEC_MAX_AUDIO_FRAME_SIZE/sizeof(int16_t)];
@@ -515,7 +515,7 @@ int32 ffmpeg_Decoder::Decode() {
 	}
 	av_packet_free(&pkt);
 	av_frame_free(&frame);
-	return ret;
+	return (ret > 0) ? AD_DECODE_CONTINUE : AD_DECODE_DONE;
 }
 
 void ffmpeg_Decoder::Close() {

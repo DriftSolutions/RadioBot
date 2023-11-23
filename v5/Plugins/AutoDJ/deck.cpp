@@ -324,7 +324,7 @@ void Deck::Decode(int32 num) {
 	int chans = ad_config.Server.Channels;// >= 2 ? 2:1;
 	int samples = num * chans;
 	try {
-		while (abuffer->len < samples && dec && dec->Decode() > 0) {;}
+		while (abuffer->len < samples && dec && dec->Decode() == AD_DECODE_CONTINUE) {;}
 	} catch(...) {
 		api->ib_printf2(pluginnum,_("AutoDJ -> Warning: exception occured while decoding audio!\n"));
 	}

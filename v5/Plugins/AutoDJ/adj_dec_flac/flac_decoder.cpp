@@ -256,9 +256,9 @@ public:
 		return fp ? fp->tell(fp):0;
 	}
 
-	virtual int32 Decode() {
+	virtual DECODE_RETURN Decode() {
 		FLAC__stream_decoder_process_single(decoder);
-		return 0;
+		return AD_DECODE_DONE;
 	}
 
 	virtual void Close() {

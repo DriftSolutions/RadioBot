@@ -230,8 +230,8 @@ public:
 		return 0;
 	}
 
-	virtual int32 Decode() {
-		return 0;
+	virtual DECODE_RETURN Decode() {
+		return AD_DECODE_DONE;
 	}
 
 	virtual bool WantTitleUpdate() {

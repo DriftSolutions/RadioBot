@@ -206,7 +206,7 @@ public:
 		return fp ? fp->tell(fp):0;
 	}
 
-	virtual int32 Decode() {
+	virtual DECODE_RETURN Decode() {
 		short buf[4096];
 		int current_section = 0;
 
@@ -214,16 +214,16 @@ public:
 
 		if (bread == OV_HOLE) {
 			adapi->botapi->ib_printf(_("AutoDJ (ogg_decoder) -> OV_HOLE @ %f seconds\n"), ov_time_tell(&vf));
-			return 0;
+			return AD_DECODE_DONE;
 		}
 
 		if (bread == OV_EBADLINK) { // corrupt file
 			adapi->botapi->ib_printf(_("AutoDJ (ogg_decoder) -> OV_EBADLINK @ %f seconds\n"), ov_time_tell(&vf));
-			return 0;
+			return AD_DECODE_ERROR;
 		}
 
 		if (bread == 0) { // EOF
-			return 0;
+			return AD_DECODE_DONE;
 		}
 
 		if (bread > 0) {
@@ -231,11 +231,11 @@ public:
 			//int32 rsamples = bread/2;
 			//buffer->realloc(buffer, rsamples);
 			//memcpy(buffer->buf, buf, rsamples*sizeof(short));
-			return adapi->GetDeck(deck)->AddSamples(buf, samples);
+			return (adapi->GetDeck(deck)->AddSamples(buf, samples) > 0) ? AD_DECODE_CONTINUE : AD_DECODE_DONE;
 		}
 
 		adapi->botapi->ib_printf(_("ogg_decode() -> nothing to do??? (bread: %d)\n"),bread);
-		return 0;
+		return AD_DECODE_CONTINUE;
 	}
 
 	virtual void Close() {

@@ -155,7 +155,7 @@ public:
 	READER_HANDLE * fp;
 	virtual bool Open(READER_HANDLE * fpp, int64 startpos)=0;
 	virtual bool Open_URL(const char * url, int64 startpos)=0;
-	virtual int32 Decode()=0;
+	virtual DECODE_RETURN Decode()=0;
 	virtual void Close()=0;
 
 	virtual int64 GetPosition()=0;

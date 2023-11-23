@@ -95,7 +95,7 @@ public:
 	virtual bool Open_URL(const char * url, int64 startpos);
 
 	virtual int64 GetPosition();
-	virtual int32 Decode();
+	virtual DECODE_RETURN Decode();
 	virtual void Close();
 };
 
@@ -169,23 +169,23 @@ bool WAV_Decoder::Open_URL(const char * fn, int64 startpos) {
 }
 
 
-int32 WAV_Decoder::Decode() {
+DECODE_RETURN WAV_Decoder::Decode() {
 	short items[256];
 	if (info.channels == 2) {
 		uint32 cnt = uint32(sf_readf_short(sf, &items[0], 128));
 		if (cnt > 0 && cnt <= 128) {
 			adapi->GetDeck(deck)->AddSamples(&items[0], cnt);
-			return 1;
+			return AD_DECODE_CONTINUE;
 		} else {
-			return 0;
+			return AD_DECODE_DONE;
 		}
 	} else {
 		uint32 cnt = uint32(sf_readf_short(sf, &items[0], 256)) ;
 		if (cnt > 0 && cnt <= 256) {
 			adapi->GetDeck(deck)->AddSamples(&items[0], cnt);
-			return 1;
+			return AD_DECODE_CONTINUE;
 		} else {
-			return 0;
+			return AD_DECODE_DONE;
 		}
 	}
 }

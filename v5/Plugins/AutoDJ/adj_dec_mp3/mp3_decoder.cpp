@@ -363,7 +363,7 @@ public:
 		return mh ? mpg123_tell(mh):0;
 	}
 
-	virtual int32 Decode() {
+	virtual DECODE_RETURN Decode() {
 		if (ctx_tag && ((unsigned)fp->tell(fp) >= ctx_tag->filepos)) {
 			TITLE_DATA td;
 			memset(&td,0,sizeof(td));

@@ -146,6 +146,7 @@ READER_HANDLE * read_file_open(const char * fn, int32 mode) {
 	}
 
 	READER_HANDLE * ret = (READER_HANDLE *)zmalloc(sizeof(READER_HANDLE));
+	memset(ret, 0, sizeof(READER_HANDLE));
 	ret->data = fp;
 	ret->can_seek = true;
 	LARGE_INTEGER fs;

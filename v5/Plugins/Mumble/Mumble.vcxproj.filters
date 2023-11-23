@@ -21,7 +21,7 @@
     <ClCompile Include="libmumble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="proto_win32\Mumble.pb.cc">
+    <ClCompile Include="proto_win32\mumble.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
