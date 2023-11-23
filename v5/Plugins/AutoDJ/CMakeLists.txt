@@ -5,6 +5,7 @@ add_subdirectory(adj_dec_flac)
 add_subdirectory(adj_dec_mp3)
 add_subdirectory(adj_dec_playlist)
 add_subdirectory(adj_dec_wav)
+add_subdirectory(adj_dec_aac)
 
 add_subdirectory(adj_enc_aac)
 CHECK_INCLUDE_FILES("aacplus.h" HAVE_AACPLUS_H)
