@@ -271,7 +271,7 @@ bool ffmpeg_Decoder::finishOpen() {
 	audioStream=-1;
 	int firstAudioStream=-1;
 	for(unsigned int i=0; i < ffmpeg_context->nb_streams; i++) {
-		if (ffmpeg_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+		if (ffmpeg_context->streams[i]->codecpar != NULL && ffmpeg_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
 			if (firstAudioStream == -1) { firstAudioStream = i; }
 			if (ffmpeg_context->streams[i]->metadata) {
 				AVDictionaryEntry * scan = av_dict_get(ffmpeg_context->streams[i]->metadata, "language", NULL, 0);

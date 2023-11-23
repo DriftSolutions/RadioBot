@@ -3,6 +3,7 @@
 *.log
 Debug
 Release
+Output
 .vs
 
 # Prerequisites

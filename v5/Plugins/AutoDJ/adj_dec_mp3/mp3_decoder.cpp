@@ -404,7 +404,7 @@ public:
 			mpg123_getformat(mh, &rate, &channels, &b);
 			adapi->botapi->ib_printf(_("AutoDJ (mp3_decoder) -> MP3 parameter change: %d channels, %dkHz samplerate!\n"), channels, rate);
 			if (!adapi->GetDeck(deck)->SetInAudioParams(channels, rate)) {
-				adapi->botapi->ib_printf(_("AutoDJ (mp3_decoder) -> Encoder init(%d,%d) returned false!\n"), channels, rate);
+				adapi->botapi->ib_printf(_("AutoDJ (mp3_decoder) -> SetInAudioParams(%d,%d) returned false!\n"), channels, rate);
 				return AD_DECODE_ERROR;
 			}
 			return AD_DECODE_CONTINUE;
