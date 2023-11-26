@@ -26,11 +26,28 @@
 //#include <faad.h>
 #include <neaacdec.h>
 
+#include <taglib.h>
+#include <tag.h>
+#include <fileref.h>
+#include <mpegfile.h>
+#include <id3v2tag.h>
+#if TAGLIB_MAJOR_VERSION > 1 || (TAGLIB_MAJOR_VERSION == 1 && TAGLIB_MINOR_VERSION >= 8)
+#define TAGLIB_HAVE_DEBUG
+#include <tdebuglistener.h>
+#endif
+#if TAGLIB_MAJOR_VERSION > 1 || (TAGLIB_MAJOR_VERSION == 1 && TAGLIB_MINOR_VERSION > 13) || (TAGLIB_MAJOR_VERSION == 1 && TAGLIB_MINOR_VERSION == 13 && TAGLIB_PATCH_VERSION > 1)
+#define TAGLIB_HAVE_AAC true
+#else
+#define TAGLIB_HAVE_AAC false
+#endif
+
 #if defined(WIN32)
 #if defined(DEBUG)
 #pragma comment(lib, "faad_d.lib")
+#pragma comment(lib, "taglib_d.lib")
 #else
 #pragma comment(lib, "faad.lib")
+#pragma comment(lib, "taglib.lib")
 #endif
 #endif
 
@@ -55,53 +72,136 @@ bool aac_is_my_file(const char * fn, const char * meta_type) {
 	return false;
 }
 
-bool aac_get_title_data(const char * fn, TITLE_DATA * td, uint32 * songlen) {
-	memset(td,0,sizeof(TITLE_DATA));
-	if (songlen) { *songlen=0; }
+inline bool aac_finish_get_title_data(TagLib::MPEG::File * iTag, TITLE_DATA * td, uint32 * songlen) {
+	bool ret = false;
 
-#ifdef WIN32
-	char * p = (char *)strrchr(fn, '\\');
-#else
-	char * p = (char *)strrchr(fn, '/');
-#endif
-	if (p) {
-		sstrcpy(td->title, p+1);
-	} else {
-		sstrcpy(td->title, fn);
-	}
-	if ((p = strrchr(td->title, '.'))) {
-		p[0]=0;
-	}
+	if (iTag->tag() && !iTag->tag()->isEmpty()) {
+		TagLib::String p = iTag->tag()->title();
+		if (!p.isNull()) {
+			strlcpy(td->title, p.toCString(true), sizeof(td->title));
+		}
+		p = iTag->tag()->artist();
+		if (!p.isNull()) {
+			strlcpy(td->artist, p.toCString(true), sizeof(td->artist));
+		}
+		p = iTag->tag()->album();
+		if (!p.isNull()) {
+			strlcpy(td->album, p.toCString(true), sizeof(td->album));
+		}
+		p = iTag->tag()->genre();
+		if (!p.isNull()) {
+			strlcpy(td->genre, p.toCString(true), sizeof(td->genre));
+		}
+		p = iTag->tag()->comment();
+		if (!p.isNull()) {
+			strlcpy(td->comment, p.toCString(true), sizeof(td->comment));
+		}
+		td->track_no = iTag->tag()->track();
+		td->year = iTag->tag()->year();
+		strtrim(td->title);
+		strtrim(td->artist);
+		strtrim(td->album);
+		strtrim(td->genre);
+		strtrim(td->comment);
 
-	strtrim(td->title," ");
-	strtrim(td->artist," ");
+		TagLib::ID3v2::Tag * tag2 = iTag->ID3v2Tag(false);
+		if (tag2 != NULL) {
+			TagLib::ID3v2::FrameList l = tag2->frameListMap()["TPE2"];
+			if (!l.isEmpty()) {
+				strlcpy(td->album_artist, l.front()->toString().toCString(true), sizeof(td->album_artist));
+				strtrim(td->album_artist);
+			}
+		}
+		if (strlen(td->title)) {
+			ret = true;
+		}
+	}
 
 	if (songlen) {
-		/*
-		SF_INFO info2;
-		memset(&info2, 0, sizeof(info2));
-		SNDFILE * sf2 = sf_open(fn, SFM_READ, &info2);
-		if (sf2) {
-			aac_count_t tmp = info2.frames / info2.samplerate;
-			*songlen = uint32(tmp);
-			aac_close(sf2);
+		TagLib::AudioProperties * ap = iTag->audioProperties();
+		if (ap != NULL) {
+			*songlen = ap->length();
 		}
-		*/
 	}
 
-	return true;
+	return ret;
+}
+
+bool aac_get_title_data(const char * fn, TITLE_DATA * td, uint32 * songlen) {
+	memset(td, 0, sizeof(TITLE_DATA));
+	if (songlen) { *songlen = 0; }
+	if (adapi->getID3Mode() == 0) {
+		return false;
+	}
+	bool ret = false;
+
+#if defined(WIN32)
+	char buf[MAX_PATH] = { 0 };
+	if (access(fn, 0) != 0) {
+		GetShortPathName(fn, buf, sizeof(buf));
+		if (strlen(buf) && access(buf, 0) == 0) {
+			fn = buf;
+		}
+	}
+#endif
+	FILE * fp = fopen(fn, "rb");
+	if (fp) {
+		char buf2[4] = { 0,0,0,0 };
+		size_t n = fread(buf2, 3, 1, fp);
+		fclose(fp);
+		if (n == 1 && !strcmp(buf2, "ID3")) {
+			TagLib::MPEG::File iTag(fn, TAGLIB_HAVE_AAC);
+			if (iTag.isOpen()) {
+				ret = aac_finish_get_title_data(&iTag, td, songlen);
+			}
+		}
+	}
+
+	return ret;
 }
 
 class AAC_Decoder: public AutoDJ_Decoder {
 private:
 	NeAACDecHandle hDec = NULL;
+
 	READER_HANDLE * fp = NULL;
 	FILE * ffp = NULL;
+	DSL_BUFFER file_buf = { 0 };
+
 	unsigned long samplerate = 0;
 	unsigned char channels = 0;
-	DSL_BUFFER file_buf = { 0 };
+	uint8 error_count = 0;
+
+	bool finishOpen();
+	int32 read(void * buf, int32 size) {
+		if (fp != NULL) {
+			return fp->read(buf, size, fp);
+		} else if (ffp != NULL) {
+			return fread(buf, 1, size, ffp);
+		}
+		return -1;
+	}
+	bool eof() {
+		if (fp != NULL) {
+			return fp->eof(fp);
+		} else if (ffp != NULL) {
+			return feof(ffp);
+		}
+		return true;
+	}
+	void fill_buffer() {
+		if (file_buf.len < AAC_BUFFER_SIZE && !eof()) {
+			int32 toRead = AAC_BUFFER_SIZE - file_buf.len;
+			char * buf = (char *)malloc(toRead);
+			int32 bRead = this->read(buf, toRead);
+			if (bRead > 0) {
+				buffer_append(&file_buf, buf, bRead);
+			}
+			free(buf);
+		}
+	}
 public:
-	virtual ~AAC_Decoder();
+	virtual ~AAC_Decoder() { Close(); }
 
 	virtual bool Open(READER_HANDLE * fpp, int64 startpos);
 	virtual bool Open_URL(const char * url, int64 startpos);
@@ -111,55 +211,13 @@ public:
 	virtual void Close();
 };
 
-AAC_Decoder::~AAC_Decoder(){}
-
 int64 AAC_Decoder::GetPosition() {
 	return 0;// sf ? aac_seek(sf, 0, SEEK_CUR) : 0;
 }
 
 bool AAC_Decoder::Open(READER_HANDLE * fnIn, int64 startpos) {
 	fp = fnIn;
-	hDec = NeAACDecOpen();
-	if (hDec == NULL) {
-		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error creating decoder handle!\n"));
-		return false;
-	}
-
-	auto config = NeAACDecGetCurrentConfiguration(hDec);
-	config->defSampleRate = adapi->GetOutputSample();
-	config->outputFormat = FAAD_FMT_16BIT;
-	NeAACDecSetConfiguration(hDec, config);
-
-	buffer_init(&file_buf);
-	buffer_resize(&file_buf, AAC_BUFFER_SIZE);
-	int32 bRead = fnIn->read(file_buf.udata, AAC_BUFFER_SIZE, fnIn);
-	if (bRead < FAAD_MIN_STREAMSIZE) {
-		buffer_free(&file_buf);
-		NeAACDecClose(hDec);
-		hDec = NULL;
-		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> File is too small!\n"));
-		return false;
-	}
-	if (bRead < AAC_BUFFER_SIZE) {
-		buffer_remove_front(&file_buf, AAC_BUFFER_SIZE - bRead);
-	}
-
-	long bused = NeAACDecInit(hDec, file_buf.udata, file_buf.len, &samplerate, &channels);
-	if (bused < 0) {
-		buffer_free(&file_buf);
-		NeAACDecClose(hDec);
-		hDec = NULL;
-		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error opening file with decoder!\n"));
-		return false;
-	}
-	buffer_remove_front(&file_buf, bused);
-
-	if (startpos && fp->seek(fp, startpos, SEEK_SET) == startpos) {
-		buffer_clear(&file_buf);
-	}
-
-	NeAACDecPostSeekReset(hDec, 1);
-	return adapi->GetDeck(deck)->SetInAudioParams(channels, samplerate);
+	return finishOpen();
 }
 
 bool AAC_Decoder::Open_URL(const char * fn, int64 startpos) {
@@ -173,12 +231,37 @@ bool AAC_Decoder::Open_URL(const char * fn, int64 startpos) {
 		return false;
 	}
 
+	return finishOpen();
+}
+
+bool AAC_Decoder::finishOpen() {
 	hDec = NeAACDecOpen();
 	if (hDec == NULL) {
-		fclose(ffp);
-		ffp = NULL;
 		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error creating decoder handle!\n"));
 		return false;
+	}
+
+	buffer_init(&file_buf);
+	buffer_resize(&file_buf, AAC_BUFFER_SIZE);
+	int32 bRead = this->read(file_buf.udata, AAC_BUFFER_SIZE);
+	if (bRead < FAAD_MIN_STREAMSIZE) {
+		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> File is too small!\n"));
+		return false;
+	}
+	if (bRead < AAC_BUFFER_SIZE) {
+		buffer_resize(&file_buf, bRead);
+	}
+
+	uint32 tagsize = 0;
+	if (!memcmp(file_buf.udata, "ID3", 3)) {
+		// skip over the ID3 tag if we have one
+		tagsize = (file_buf.udata[6] << 21) | (file_buf.udata[7] << 14) | (file_buf.udata[8] << 7) | (file_buf.udata[9] << 0);
+		tagsize += 10;
+#ifdef DEBUG
+		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Found ID3 tag with size %u...\n"), tagsize);
+#endif
+		buffer_remove_front(&file_buf, tagsize);
+		fill_buffer();
 	}
 
 	auto config = NeAACDecGetCurrentConfiguration(hDec);
@@ -186,42 +269,12 @@ bool AAC_Decoder::Open_URL(const char * fn, int64 startpos) {
 	config->outputFormat = FAAD_FMT_16BIT;
 	NeAACDecSetConfiguration(hDec, config);
 
-	buffer_init(&file_buf);
-	buffer_resize(&file_buf, AAC_BUFFER_SIZE);
-	size_t bRead = fread(file_buf.udata, 1, AAC_BUFFER_SIZE, ffp);
-	if (bRead < FAAD_MIN_STREAMSIZE) {
-		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error reading file: %s!\n"), strerror(errno));
-		if (bRead > 0) {
-			adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> File is too small!\n"));
-		} else {
-			adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error reading file: %s!\n"), strerror(errno));
-		}
-		buffer_free(&file_buf);
-		NeAACDecClose(hDec);
-		hDec = NULL;
-		fclose(ffp);
-		ffp = NULL;
-		return false;
-	}
-	if (bRead < AAC_BUFFER_SIZE) {
-		buffer_remove_front(&file_buf, AAC_BUFFER_SIZE - bRead);
-	}
-
 	long bused = NeAACDecInit(hDec, file_buf.udata, file_buf.len, &samplerate, &channels);
 	if (bused < 0) {
-		buffer_free(&file_buf);
-		NeAACDecClose(hDec);
-		hDec = NULL;
-		fclose(ffp);
-		ffp = NULL;
 		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error opening file with decoder!\n"));
 		return false;
 	}
 	buffer_remove_front(&file_buf, bused);
-
-	if (startpos && fseek64(ffp, startpos, SEEK_SET) == startpos) {
-		buffer_clear(&file_buf);
-	}
 
 	NeAACDecPostSeekReset(hDec, 1);
 	return adapi->GetDeck(deck)->SetInAudioParams(channels, samplerate);
@@ -252,23 +305,7 @@ inline bool advance_to_frame(DSL_BUFFER * buf) {
 DECODE_RETURN AAC_Decoder::Decode() {
 	NeAACDecFrameInfo fi;
 	if (file_buf.len < AAC_BUFFER_SIZE * 0.5) {
-		if (fp != NULL && !fp->eof(fp)) {
-			int32 toRead = AAC_BUFFER_SIZE - file_buf.len;
-			char * buf = (char *)malloc(toRead);
-			int32 bRead = fp->read(buf, toRead, fp);
-			if (bRead > 0) {
-				buffer_append(&file_buf, buf, bRead);
-			}
-			free(buf);
-		} else if (ffp != NULL && !feof(ffp)) {
-			int32 toRead = AAC_BUFFER_SIZE - file_buf.len;
-			char * buf = (char *)malloc(toRead);
-			int32 bRead = fread(buf, 1, toRead, ffp);
-			if (bRead > 0) {
-				buffer_append(&file_buf, buf, bRead);
-			}
-			free(buf);
-		}
+		fill_buffer();
 	}
 
 	if (!advance_to_frame(&file_buf)) {
@@ -283,8 +320,8 @@ DECODE_RETURN AAC_Decoder::Decode() {
 		adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> Error while decoding file: %s\n"), NeAACDecGetErrorMessage(fi.error));
 		if (fi.bytesconsumed == 0) {
 			buffer_remove_front(&file_buf, 1);
-		}
-		return AD_DECODE_CONTINUE;
+		}		
+		return (error_count++ < 5) ? AD_DECODE_CONTINUE : AD_DECODE_ERROR;
 	}
 
 	if (sample_buffer == NULL) {
@@ -306,7 +343,6 @@ DECODE_RETURN AAC_Decoder::Decode() {
 }
 
 void AAC_Decoder::Close() {
-	adapi->botapi->ib_printf(_("AutoDJ (aac_decoder) -> aac_close()\n"));
 	if (hDec != NULL) {
 		NeAACDecClose(hDec);
 		hDec = NULL;

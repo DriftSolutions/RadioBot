@@ -157,6 +157,7 @@ public:
 	virtual bool Open_URL(const char * url, int64 startpos)=0;
 	virtual DECODE_RETURN Decode()=0;
 	virtual void Close()=0;
+	virtual ~AutoDJ_Decoder() {};
 
 	virtual int64 GetPosition()=0;
 

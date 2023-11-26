@@ -63,7 +63,6 @@ typedef std::map<T_SOCKET *, SendQueueType> PriorityQueueType;
 Titus_Mutex sqMutex;
 PriorityQueueType PriorityQueue;
 // immediate buffers
-Titus_Mutex sqBufferMutex;
 std::map<T_SOCKET *, shared_ptr<QueueBuffer>> buffers;
 
 SENDQ_STATS sq_stats;
@@ -99,7 +98,6 @@ void Push_History(uint32 level, uint32 val) {
  */
 int bSend(T_SOCKET * sock, const char * buf, int32 len, uint8 priority, uint32 delay) {
 	if (len <= 0) { len = strlen(buf); }
-	sqMutex.Lock();
 #if defined(SENDQ_MEMLEAK)
 	SENDQ_QUEUE * Scan = znew(SENDQ_QUEUE);
 #else
@@ -107,6 +105,19 @@ int bSend(T_SOCKET * sock, const char * buf, int32 len, uint8 priority, uint32 d
 #endif
 	memset(Scan, 0, sizeof(SENDQ_QUEUE));
 	Scan->netno = -1;
+	Scan->len = len;
+	Scan->priority = priority;
+	Scan->sock = sock;
+	Scan->sendAt = time(NULL) + delay;
+#if defined(SENDQ_MEMLEAK)
+	Scan->data = (char *)zmalloc(len + 1);
+#else
+	Scan->data = new char[len + 1];
+#endif
+	Scan->data[len] = 0;
+	memcpy(Scan->data, buf, len);
+
+	AutoMutex(sqMutex);
 #if defined(IRCBOT_ENABLE_IRC)
 	for (int i=0; i < config.num_irc; i++) {
 		if (config.ircnets[i].sock == sock) {
@@ -121,21 +132,9 @@ int bSend(T_SOCKET * sock, const char * buf, int32 len, uint8 priority, uint32 d
 	}
 #endif
 	sq_stats.queued_items++;
-	Scan->len = len;
-	Scan->priority = priority;
-	Scan->sock = sock;
-	Scan->sendAt = time(NULL)+delay;
-#if defined(SENDQ_MEMLEAK)
-	Scan->data = (char *)zmalloc(len+1);
-#else
-	Scan->data = new char[len+1];
-#endif
-	Scan->data[len] = 0;
-	memcpy(Scan->data, buf, len);
 
 	PriorityQueue[sock].push_back(Scan);
 
-	sqMutex.Release();
 	return len;
 }
 
@@ -144,7 +143,7 @@ int bSend(T_SOCKET * sock, const char * buf, int32 len, uint8 priority, uint32 d
  * @param q the queue entry to free
  */
 void SendQ_Delete(SENDQ_QUEUE * q) {
-	sqMutex.Lock();
+	AutoMutex(sqMutex);
 #if defined(SENDQ_MEMLEAK)
 	zfree(q->data);
 	zfree(q);
@@ -152,7 +151,6 @@ void SendQ_Delete(SENDQ_QUEUE * q) {
 	delete [] q->data;
 	delete q;
 #endif
-	sqMutex.Release();
 }
 
 /**
@@ -214,7 +212,6 @@ void SendQ_ClearSockEntries(T_SOCKET * sock) {
 		PriorityQueue.erase(z);
 	}
 
-	AutoMutex(sqBufferMutex);
 	auto x = buffers.find(sock);
 	if (x != buffers.end()) {
 		buffer_clear(&x->second->buffer);
@@ -230,7 +227,6 @@ bool SendQ_HaveQueueItems() {
 		}
 	}
 
-	AutoMutex(sqBufferMutex);
 	if (buffers.size()) {
 		return true;
 	}
@@ -251,7 +247,6 @@ bool SendQ_HaveSockEntries(T_SOCKET * sock) {
 		}
 	}
 
-	AutoMutex(sqBufferMutex);
 	auto x = buffers.find(sock);
 	if (x != buffers.end()) {
 		return true;
@@ -272,7 +267,6 @@ uint32 SendQ_CountSockEntries(T_SOCKET * sock) {
 		ret += z->second.size();
 	}
 
-	AutoMutex(sqBufferMutex);
 	auto x = buffers.find(sock);
 	if (x != buffers.end()) {
 		ret++;
@@ -331,8 +325,7 @@ THREADTYPE SendQ_Thread(void * lpData) {
 	while (!config.shutdown_sendq || SendQ_HaveQueueItems()) {// || PriorityQueue.size()
 		time_t cur = time(NULL);
 		if (cur >= nextSend) {
-			sqMutex.Lock();
-			sqBufferMutex.Lock();
+			AutoMutex(sqMutex);
 			// make sure there is a buffer for all queued items
 			for (auto curque = PriorityQueue.begin(); curque != PriorityQueue.end(); curque++) {
 				auto curbuf = buffers.find(curque->first);
@@ -343,7 +336,6 @@ THREADTYPE SendQ_Thread(void * lpData) {
 					buffers[curque->first] = make_shared<QueueBuffer>();
 				}
 			}
-			sqMutex.Release();
 
 			for (auto cursock = buffers.begin(); cursock != buffers.end(); cursock++) {
 				if (!config.sockets->IsKnownSocket(cursock->first)) {
@@ -413,7 +405,6 @@ THREADTYPE SendQ_Thread(void * lpData) {
 					x++;
 				}
 			}
-			sqBufferMutex.Release();
 
 			if ((cur - config.start_time) > 0) {
 				sq_stats.avgBps = (sq_stats.bytesSentIRC + sq_stats.bytesSent) / (cur - config.start_time);
@@ -426,10 +417,8 @@ THREADTYPE SendQ_Thread(void * lpData) {
 
 	// these should be clear already
 	sqMutex.Lock();
-	sqBufferMutex.Lock();
 	buffers.clear();
 	PriorityQueue.clear();
-	sqBufferMutex.Release();
 	sqMutex.Release();
 
 	TT_THREAD_END

@@ -152,6 +152,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoDJ", "..\v5\Plugins\Aut
 		{9E2467E0-2657-4A34-84A5-8567D695BE17} = {9E2467E0-2657-4A34-84A5-8567D695BE17}
 		{99BF8AE6-3487-4A7A-BE57-BE5DE47C9CDD} = {99BF8AE6-3487-4A7A-BE57-BE5DE47C9CDD}
 		{7CBF07E8-FA5E-41C6-B203-8CA78B7C0024} = {7CBF07E8-FA5E-41C6-B203-8CA78B7C0024}
+		{BBA923F4-657E-40BE-8F2B-101CFA439419} = {BBA923F4-657E-40BE-8F2B-101CFA439419}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutoDJ Encoders", "AutoDJ Encoders", "{F5D4740D-20FE-4D96-8980-A1DC84F28BB7}"
@@ -285,6 +286,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRCBot5_Standalone", "..\v5\IRCBot5_Standalone\IRCBot5_Standalone.vcxproj", "{3F4D0A27-1186-4747-AC98-0E4F36DB4261}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChatGPT", "..\v5\Plugins\ChatGPT\ChatGPT.vcxproj", "{482474F4-DBC5-4B73-A252-44EBEB88C014}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adj_dec_aac", "..\v5\Plugins\AutoDJ\adj_dec_aac\adj_dec_aac.vcxproj", "{BBA923F4-657E-40BE-8F2B-101CFA439419}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2365,6 +2368,36 @@ Global
 		{482474F4-DBC5-4B73-A252-44EBEB88C014}.Release|Win32.Build.0 = Release|Win32
 		{482474F4-DBC5-4B73-A252-44EBEB88C014}.Release|x86.ActiveCfg = Release|Win32
 		{482474F4-DBC5-4B73-A252-44EBEB88C014}.Release|x86.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|Mixed Platforms.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|Mixed Platforms.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|Win32.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|Win32.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|x86.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Lite|x86.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|Mixed Platforms.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|Mixed Platforms.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|Win32.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|Win32.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|x86.ActiveCfg = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug Profiled|x86.Build.0 = Debug Profiled|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|Win32.Build.0 = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|x86.ActiveCfg = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Debug|x86.Build.0 = Debug|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|Mixed Platforms.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|Mixed Platforms.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|Win32.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|Win32.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|x86.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release Lite|x86.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|Win32.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|Win32.Build.0 = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|x86.ActiveCfg = Release|Win32
+		{BBA923F4-657E-40BE-8F2B-101CFA439419}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2459,9 +2492,10 @@ Global
 		{6F699183-97ED-4CAC-81A4-05012741E044} = {0ADAC4F6-0437-4268-9758-016F7553F062}
 		{3F4D0A27-1186-4747-AC98-0E4F36DB4261} = {2B2AB068-C2F8-49D7-A604-874609D39B4D}
 		{482474F4-DBC5-4B73-A252-44EBEB88C014} = {0ADAC4F6-0437-4268-9758-016F7553F062}
+		{BBA923F4-657E-40BE-8F2B-101CFA439419} = {AC84D7B7-09A7-485F-973F-82D4887DBC39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = ..
 		SolutionGuid = {0C6357B1-C1AC-4210-8E14-C39E7A94C5BD}
+		VisualSVNWorkingCopyRoot = ..
 	EndGlobalSection
 EndGlobal
