@@ -664,8 +664,6 @@ int BotMain(int argc, char *argv[]) {
 		ib_printf(_("%s: Messages: %d, Sound Servers: %d\n\n"), IRCBOT_NAME, config.messages.size(),config.num_ss);
 #elif defined(IRCBOT_ENABLE_IRC)
 		ib_printf(_("%s: IRC Networks: %d, Messages: %d\n\n"), IRCBOT_NAME,config.num_irc,config.messages.size());
-#else
-		#error Unknown combo of ENABLE options!
 #endif
 
 		/*
@@ -826,12 +824,8 @@ int BotMain(int argc, char *argv[]) {
 		ib_printf(_("%s: Ready for action...\n"), IRCBOT_NAME);
 
 		while (!config.shutdown_now) {
-			safe_sleep(1);
-#if defined(IRCBOT_ENABLE_IRC)
-			handle_timers();
-#endif
 #if defined(WIN32)
-			if (config.cSock != NULL && config.sockets->Select_Read(config.cSock, uint32(0)) > 0) {
+			if (config.cSock != NULL && config.sockets->Select_Read(config.cSock, 1000) > 0) {
 				int n = config.sockets->Recv(config.cSock, curline, sizeof(curline));
 				if (n > 0) {
 					curline[n] = 0;
@@ -850,7 +844,14 @@ int BotMain(int argc, char *argv[]) {
 					config.sockets->Close(config.cSock);
 					config.cSock = NULL;
 				}
+			} else {
+				safe_sleep(1);
 			}
+#else
+			safe_sleep(1);
+#endif
+#if defined(IRCBOT_ENABLE_IRC)
+			handle_timers();
 #endif
 		}
 
@@ -862,7 +863,6 @@ int BotMain(int argc, char *argv[]) {
 #endif
 
 		ib_printf(_("\n%s: Shutting down...\n"), IRCBOT_NAME);
-		DRIFT_DIGITAL_SIGNATURE();
 
 		UnregisterCommandAliases();
 #if defined(IRCBOT_ENABLE_SS)

@@ -793,7 +793,7 @@ void InitDatabase() {
 		Query("UPDATE Version SET Version=2");
 		db_version = 2;
 	}
-#if !defined(__EDITUSERS__)
+#if !defined(__EDITUSERS__) && defined(IRCBOT_ENABLE_SS)
 	if (db_version < 3) {
 		RebuildRatings();
 		Query("UPDATE Version SET Version=3");

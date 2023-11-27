@@ -126,8 +126,6 @@ THREADTYPE IdleThread(VOID *lpData) {
 	char buf[1024];
 	//int i=0;
 
-	DRIFT_DIGITAL_SIGNATURE();
-
 	time_t last_user_backup = 0;
 	//time_t last_user_save = 0;
 	time_t last_idle_check = 0;

@@ -348,9 +348,6 @@ bool SyncConfigNoRehash() {
 }
 
 bool SyncConfig(Universal_Config * con) {
-	//ib_printf(_("IRCBot: SyncConfig()...\n"));
-	DRIFT_DIGITAL_SIGNATURE();
-
 	if (con == NULL && !SyncConfigNoRehash()) {
 		return false;
 	}

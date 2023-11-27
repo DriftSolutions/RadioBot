@@ -42,6 +42,9 @@ public:
 
 class SendQueue {
 public:
+#ifdef DEBUG
+	T_SOCKET * sock = NULL;
+#endif
 	DSL_BUFFER buffer;
 	int netno = -1;
 	time_t lastUsed = time(NULL);
@@ -66,9 +69,9 @@ public:
 					if (x->sendAt <= tme) {
 #ifdef DEBUG
 						if (netno >= 0) {
-							ib_printf("SendQ[%p]: IRC[%d]: Added %zu bytes: %s", this, netno, x->data.length(), x->data.c_str());
+							ib_printf("SendQ[%p]: IRC[%d]: Added %zu bytes: %s", sock, netno, x->data.length(), x->data.c_str());
 						} else {
-							ib_printf("SendQ[%p]: non-IRC: Added %zu bytes: %s", this, x->data.length(), x->data.c_str());
+							ib_printf("SendQ[%p]: non-IRC: Added %zu bytes: %s", sock, x->data.length(), x->data.c_str());
 						}
 #endif
 						buffer_append(&buffer, x->data.c_str(), x->data.length());
@@ -145,6 +148,9 @@ int bSend(T_SOCKET * sock, const char * buf, int32 len, uint8 priority, uint32 d
 		q = x->second;
 	} else {
 		q = make_shared<SendQueue>();
+#ifdef DEBUG
+		q->sock = sock;
+#endif
 		PriorityQueue.insert({ sock, q });
 	}
 

@@ -64,7 +64,6 @@ bool Parse_SC_NoPass(int num, BUFFER * buf, STATS * stats) {
 	bool ret = false;
 	memset(stats, 0, sizeof(STATS));
 
-	DRIFT_DIGITAL_SIGNATURE();
 	char *tmp = buf->data ? strstr(buf->data,"Stream is up at "):NULL;
 	if (tmp) {
 		if (access("shoutcast.txt", 0) == 0) { remove("shoutcast.txt"); }

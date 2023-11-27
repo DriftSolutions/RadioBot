@@ -470,8 +470,6 @@ THREADTYPE scThread(VOID *lpData) {
 		}
 	}
 
-	DRIFT_DIGITAL_SIGNATURE();
-
 	ib_printf(_("Sound Server Info Thread Ended\n"));
 	TT_THREAD_END
 }

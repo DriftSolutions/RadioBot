@@ -1362,8 +1362,6 @@ THREADTYPE ircThread(VOID *lpData) {
 					continue;
 				}
 
-				DRIFT_DIGITAL_SIGNATURE();
-
 				if (!stricmp(cmd,"PRIVMSG") && parms[1] != NULL) { // a message
 					USER_PRESENCE * up = alloc_irc_presence(config.ircnets[netno].sock, netno, from, hostmask, config.ircnets[netno].IsChannelPrefix(parms[0][0]) ? parms[0]:NULL);
 

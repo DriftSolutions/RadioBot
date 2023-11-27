@@ -146,7 +146,6 @@ bool LoadPlugin4(int num, DL_HANDLE hHandle) {
 bool LoadPlugin(int num) {
 	PLUGIN * Scan = &config.plugins[num];
 
-	DRIFT_DIGITAL_SIGNATURE();
 	ib_printf(_("%s: Loading plugin %s ...\n"), IRCBOT_NAME, Scan->fn.c_str());
 
 	if (!VerifyChecksum(Scan->fn.c_str())) {

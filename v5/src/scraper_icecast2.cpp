@@ -170,7 +170,6 @@ bool Parse_ICE_NoPass(int num, BUFFER * buf, STATS * stats) {
 		ib_printf(_("SS Scraper -> Got garbage from server [%d]\n"),num);
 	}
 	delete doc;
-	DRIFT_DIGITAL_SIGNATURE();
 	return ret;
 }
 

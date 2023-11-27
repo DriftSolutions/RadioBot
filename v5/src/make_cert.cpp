@@ -25,9 +25,13 @@
 #if defined(ENABLE_OPENSSL)
 #include <openssl/x509.h>
 #include <openssl/rsa.h>
+#include <openssl/opensslv.h>
 
 /* Generates a 2048-bit RSA key. */
-EVP_PKEY * make_priv_key() {
+inline EVP_PKEY * make_priv_key() {
+#if OPENSSL_VERSION_PREREQ(3,0)
+    return EVP_RSA_gen(2048);
+#else
     /* Allocate memory for the EVP_PKEY structure. */
     EVP_PKEY * pkey = EVP_PKEY_new();
     if (pkey == NULL) {
@@ -45,6 +49,7 @@ EVP_PKEY * make_priv_key() {
 
     /* The key has been generated, return it. */
     return pkey;
+#endif
 }
 
 /* Generates a self-signed x509 certificate. */

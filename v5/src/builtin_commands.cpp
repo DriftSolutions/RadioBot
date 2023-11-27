@@ -1424,7 +1424,7 @@ void find_finish(USER_PRESENCE * ut, FIND_RESULTS * qRes, int max) {
 			ut->std_reply(ut, buf);
 		}
 	}
-	DRIFT_DIGITAL_SIGNATURE();
+	
 	if (match) {
 		char buf2[1024];
 		sprintf(buf2, _(" (first %d shown)"), max);

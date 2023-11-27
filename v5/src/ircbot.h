@@ -52,53 +52,6 @@
 #define _WIN32
 #endif
 
-#ifdef _WIN32
-static inline void DRIFT_DIGITAL_SIGNATURE() {
-	__asm {
-		jmp sigend;
-		_emit 0x44;
-		_emit 0x52;
-		_emit 0x49;
-		_emit 0x46;
-		_emit 0x54;
-		_emit 0x53;
-		_emit 0x49;
-		_emit 0x47;
-		_emit 0x00;
-		_emit 0x00;
-		_emit 0x00;
-		_emit 0x00;
-		_emit 0x00;
-		_emit 0x00;
-		_emit 0x99;
-sigend:
-	}
-}
-#elif defined(__GNUC__) && !defined(__clang__) && !defined(__llvm__) && !defined(__arm__)
-static inline void DRIFT_DIGITAL_SIGNATURE() {
-	__asm __volatile__ ("jmp sigend;\n\t"
-		".byte 0x44;\n\t"
-		".byte 0x52;\n\t"
-		".byte 0x49;\n\t"
-		".byte 0x46;\n\t"
-		".byte 0x54;\n\t"
-		".byte 0x53;\n\t"
-		".byte 0x49;\n\t"
-		".byte 0x47;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x00;\n\t"
-		".byte 0x99;\n\t"
-		"sigend:\n\t"
-	);
-}
-#else
-static inline void DRIFT_DIGITAL_SIGNATURE() {}
-#endif
-
 void ib_printf2(int pluginnum, const char * fmt, ...);
 #define ib_printf(x, ...) ib_printf2(-1, x, ##__VA_ARGS__)
 bool OpenLog();
