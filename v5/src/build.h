@@ -21,5 +21,5 @@
 \**********************************************************************/
 //@AUTOHEADER@END@
 
-#define BUILD 1242
-#define BUILD_STRING "1242"
+#define BUILD 1243
+#define BUILD_STRING "1243"

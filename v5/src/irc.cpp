@@ -996,24 +996,14 @@ THREADTYPE ircThread(VOID *lpData) {
 					fflush(config.ircnets[netno].log_fp);
 				}
 
-				//memcpy(&buf2,&buf,sizeof(buf));
-				//sstrcpy(buf2, buf);
 				bool dobreak=false;
 				for (int pln=0; pln < MAX_PLUGINS; pln++) {
 					if (config.plugins[pln].hHandle && config.plugins[pln].plug) {
 						if (config.plugins[pln].plug->raw) {
-							if (config.plugins[pln].plug->raw(netno,buf)) { dobreak=true; break; }
+							if (config.plugins[pln].plug->raw(netno, buf)) { dobreak=true; break; }
 						}
 					}
 				}
-				/*
-				for (int pln=0; pln < NumPlugins5(); pln++) {
-					IRCBotPlugin * Scan = GetPlugin5(pln);
-					if (Scan) {
-						if (Scan->OnRaw(netno,buf)) { dobreak=true; break; }
-					}
-				}
-				*/
 				if (dobreak) { continue; }
 
 				if (!strnicmp(buf, ":ERROR ", 7) || !strnicmp(buf, "ERROR ", 6)) {
@@ -1239,7 +1229,7 @@ THREADTYPE ircThread(VOID *lpData) {
 				if (!strcmp(cmd,ERR_UNKNOWNCOMMAND)) { // unknown command
 					if (!strncmp(parms[1],"IRCBOT_IDLE_",strlen("IRCBOT_IDLE_"))) {
 						char *p = parms[1] + strlen("IRCBOT_IDLE_");
-						double tme = ircbot_get_cycles() - atoi64(p);
+						double tme = double(ircbot_get_cycles() - atoi64(p));
 						tme /= 1000;
 						ib_printf(_("[irc-%d] Server Round Trip Time: %.02f secs\n"),netno,tme);
 					} else {
@@ -1470,32 +1460,32 @@ THREADTYPE ircThread(VOID *lpData) {
 						uflag_to_string(up->Flags, buf3, sizeof(buf3));
 						ib_printf(_("[irc-%d] [%s][PM] <%s> %s\n"),netno,buf3,from,parms[1]);
 						if (config.base.log_chan.length() && config.ircnets[0].ready) {
-							sprintf(buf2,"PRIVMSG %s :[IRC-%d][PM] <%s[%s]> %s\n",config.base.log_chan.c_str(),netno,from,buf3,parms[1]);
+							snprintf(buf2, sizeof(buf2), "PRIVMSG %s :[IRC-%d][PM] <%s[%s]> %s\n",config.base.log_chan.c_str(),netno,from,buf3,parms[1]);
 							bSend(config.ircnets[0].sock,buf2,strlen(buf2), PRIORITY_LOWEST);
 						}
 
 						if (!stricmp(parms[1],"\001VERSION\001")) {
-							sprintf(buf2,"NOTICE %s :\001VERSION RadioBot %s%s/%s (C) 2003+ Drift Solutions [Build #" BUILD_STRING "] [Built on %s at %s]\001\r\n\0Editing the VERSION string is strictly forbidden by the RadioBot EULA",from,(GetBotVersion() & IRCBOT_VERSION_FLAG_LITE) ? "Lite ":"",GetBotVersionString(),PLATFORM,__DATE__,__TIME__);
+							snprintf(buf2, sizeof(buf2), "NOTICE %s :\001VERSION RadioBot %s%s/%s (C) 2003+ Drift Solutions [Build #" BUILD_STRING "] [Built on %s at %s]\001\r\n\0Editing the VERSION string is strictly forbidden by the RadioBot EULA",from,(GetBotVersion() & IRCBOT_VERSION_FLAG_LITE) ? "Lite ":"",GetBotVersionString(),PLATFORM,__DATE__,__TIME__);
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 						if (!stricmp(parms[1],"\001TIME\001")) {
-							sprintf(buf2,"NOTICE %s :\001TIME It's Time To Tune In!\001\r\n",from);
+							snprintf(buf2, sizeof(buf2), "NOTICE %s :\001TIME It's Time To Tune In!\001\r\n",from);
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 						if (!strnicmp(parms[1],"\001PING ",6)) {
-							sprintf(buf2,"NOTICE %s :%s\r\n",from,parms[1]);
+							snprintf(buf2, sizeof(buf2), "NOTICE %s :%s\r\n",from,parms[1]);
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 						if (!stricmp(parms[1],"\001USERINFO\001")) {
-							sprintf(buf2,"NOTICE %s :\001USERINFO I fight for the users!\001\r\n",from);
+							snprintf(buf2, sizeof(buf2), "NOTICE %s :\001USERINFO I fight for the users!\001\r\n",from);
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 						if (!stricmp(parms[1],"\001FINGER\001")) {
-							sprintf(buf2,"NOTICE %s :\001FINGER All work and no play makes %s a dull boy.\001\r\n",from,config.ircnets[0].cur_nick.c_str());
+							snprintf(buf2, sizeof(buf2), "NOTICE %s :\001FINGER All work and no play makes %s a dull boy.\001\r\n",from,config.ircnets[0].cur_nick.c_str());
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 						if (!stricmp(parms[1],"\001XYZZY\001")) {
-							sprintf(buf2,"NOTICE %s :\001XYZZY Nothing happens.\001\r\n",from);
+							snprintf(buf2,sizeof(buf2),"NOTICE %s :\001XYZZY Nothing happens.\001\r\n",from);
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 
