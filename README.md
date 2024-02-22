@@ -5,7 +5,7 @@ I'll be the first to admit it's kind of a mess in places, the bot was originally
 ## Compiling on Windows
 In the IRCBot folder, load IRCBot.sln. A Windows build is going to be harder just because there are so many dependencies if you want to build everything. I have (and the solution is set up for) a folder c:\deps with a lib and include folder and I keep all my deps in it like on a Linux directory structure. The core things you will need: 
  
-**Drift Standard Libraries:** https://github.com/DriftSolutions/DSL<br />
+**Drift Standard Libraries:** https://github.com/DriftSolutions/DSL  
 **OpenSSL:** I recommend https://slproweb.com/products/Win32OpenSSL.html
 
 ## Compiling on Linux/Unix
