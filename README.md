@@ -23,4 +23,4 @@ In the IRCBot folder, load IRCBot.sln. A Windows build is going to be harder jus
 _(Please let me know if I missed any.)_  
 3. cd to the cloned repo, create a 'build' subfolder and cd to it.  
 4. Run: cmake ..  
-5. make -j&lt;however many CPU cores you have&gt;<br />
+5. make -j**X** (where **X** is however many CPU cores you have)
