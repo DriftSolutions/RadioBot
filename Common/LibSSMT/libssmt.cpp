@@ -26,7 +26,7 @@
 #endif
 #include <drift/dslcore.h>
 #include <drift/GenLib.h>
-#include <drift/Buffer.h>
+#include <drift/buffer.h>
 #include "libssmt.h"
 
 #define SSMT_MAJOR 1
