@@ -148,37 +148,38 @@ bool lfm_scrobble(const char * artist, const char * album, const char * title, i
 			api->curl->easy_setopt(h, CURLOPT_WRITEDATA, fp);
 			api->curl->easy_setopt(h, CURLOPT_POST, 1);
 
-			Titus_Buffer tb;
+			DSL_BUFFER tb = {0};
+			buffer_init(&tb);
 			char * p = api->curl->escape(lfm_config.sesid, 0);
-			tb.Append("s=");
-			tb.Append(p);
+			buffer_append(&tb, "s=", strlen("s="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
 			p = api->curl->escape(artist?artist:"", 0);
-			tb.Append("&a[0]=");
-			tb.Append(p);
+			buffer_append(&tb, "&a[0]=", strlen("&a[0]="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
 			p = api->curl->escape(title, 0);
-			tb.Append("&t[0]=");
-			tb.Append(p);
+			buffer_append(&tb, "&t[0]=", strlen("&t[0]="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
 
 			sprintf(buf2, I64FMT, startTime);
 			p = api->curl->escape(buf2, 0);
-			tb.Append("&i[0]=");
-			tb.Append(p);
+			buffer_append(&tb, "&i[0]=", strlen("&i[0]="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
-			tb.Append("&o[0]=P");
+			buffer_append(&tb, "&o[0]=P", strlen("&o[0]=P"));
 			sprintf(buf2, "%d", songLen);
 			p = api->curl->escape(buf2, 0);
-			tb.Append("&l[0]=");
-			tb.Append(p);
+			buffer_append(&tb, "&l[0]=", strlen("&l[0]="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
 			p = api->curl->escape(album?album:"", 0);
-			tb.Append("&b[0]=");
-			tb.Append(p);
+			buffer_append(&tb, "&b[0]=", strlen("&b[0]="));
+			buffer_append(&tb, p, strlen(p));
 			api->curl->free(p);
-			tb.Append("&r[0]=&n[0]=&m[0]=");
-			tb.Append_int8(0);
+			buffer_append(&tb, "&r[0]=&n[0]=&m[0]=", strlen("&r[0]=&n[0]=&m[0]="));
+			buffer_append_int<uint8>(&tb, 0);
 
 			/*
 			struct curl_httppost* post = NULL;
@@ -200,9 +201,11 @@ bool lfm_scrobble(const char * artist, const char * album, const char * title, i
 			api->curl->easy_setopt(h, CURLOPT_HTTPPOST, post);
 			*/
 
-			api->curl->easy_setopt(h, CURLOPT_POSTFIELDS, tb.Get());
+			api->curl->easy_setopt(h, CURLOPT_POSTFIELDS, tb.data);
 
-			if (api->curl->easy_perform(h) == CURLE_OK) {
+			int curl_rc = api->curl->easy_perform(h);
+			buffer_free(&tb);
+			if (curl_rc == CURLE_OK) {
 				fclose(fp);
 				fp = fopen("./tmp/lastfm.tmp", "rb");
 				if (fp != NULL) {
