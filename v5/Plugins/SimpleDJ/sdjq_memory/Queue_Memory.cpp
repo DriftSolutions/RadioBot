@@ -65,9 +65,6 @@ uint32 FileID(char * fn) {
 }
 
 void FreePlayList() {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FreePlayList!\n");
-	}
 
 	QUEUE * Scan = qFirst;
 	QUEUE * toDel = NULL;
@@ -91,9 +88,6 @@ void FreePlayList() {
 }
 
 QUEUE_FIND_RESULT * FindWild(const char * pat) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindWild!\n");
-	}
 
 	QUEUE_FIND_RESULT * ret = (QUEUE_FIND_RESULT *)qm_malloc(sizeof(QUEUE_FIND_RESULT));
 	memset(ret,0,sizeof(QUEUE_FIND_RESULT));
@@ -118,9 +112,7 @@ QUEUE_FIND_RESULT * FindWild(const char * pat) {
 }
 
 QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindByMeta!\n");
-	}
+
 	QUEUE_FIND_RESULT * ret = (QUEUE_FIND_RESULT *)qm_malloc(sizeof(QUEUE_FIND_RESULT));
 	memset(ret,0,sizeof(QUEUE_FIND_RESULT));
 
@@ -167,9 +159,7 @@ QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 }
 
 void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FreeFindResult!\n");
-	}
+
 	for (int i=0; i < qRes->num; i++) {
 		api->FreeQueue(qRes->results[i]);
 	}
@@ -177,9 +167,7 @@ void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
 }
 
 QUEUE * FindFile(const char * fn) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindFile!\n");
-	}
+
 #if defined(DEBUG)
 	CheckQueue(&qFirst, &qLast);
 #endif
@@ -194,9 +182,7 @@ QUEUE * FindFile(const char * fn) {
 }
 
 QUEUE * FindFileByID(uint32 id) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindFile!\n");
-	}
+
 #if defined(DEBUG)
 	CheckQueue(&qFirst, &qLast);
 #endif
@@ -211,10 +197,6 @@ QUEUE * FindFileByID(uint32 id) {
 }
 
 QUEUE * GetRandomFile() {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling GetRandomFile!\n");
-	}
-
 	char buf[4096];
 
 	int tries = 0;
@@ -321,9 +303,7 @@ inline int SortCmp(QUEUE * q1, QUEUE * q2) {
 }
 
 void SortQueue(QUEUE ** qqFirst, QUEUE ** qqLast) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling SortQueue!\n");
-	}
+
 #if defined(WIN32)
 	uint32 ticks = GetTickCount();
 	uint32 loops = 0;
@@ -420,9 +400,7 @@ void SortQueue(QUEUE ** qqFirst, QUEUE ** qqLast) {
 }
 
 void CheckQueue(QUEUE ** qqFirst, QUEUE ** qqLast) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling CheckQueue!\n");
-	}
+
 	QUEUE *fQue = *qqFirst;
 	QUEUE *lQue = *qqLast;
 
@@ -569,9 +547,6 @@ void AddToQueue(QUEUE * q, QUEUE ** qqFirst, QUEUE ** qqLast) {
 }
 
 void ScanDirectory(char * path, QUEUE ** qqFirst, QUEUE ** qqLast, int32 * num_files) {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling Scan Directory!\n");
-	}
 	//QUEUE *fQue = *qqFirst;
 	//QUEUE *lQue = *qqLast;
 

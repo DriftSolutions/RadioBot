@@ -42,10 +42,6 @@ typedef std::map<unsigned long, META_CACHE *> metaCacheList;
 metaCacheList mList;
 
 void FreeMetaCache() {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FreeMetaCache!\n");
-	}
-
 	metaCacheList::iterator x = mList.begin();
 	while (x != mList.end()) {
 		api->free(x->second);
@@ -133,10 +129,6 @@ int loadmc_callback(void * ptr, int ncols, char ** vals, char ** cols) {
 
 void LoadMetaCache() {
 	FreeMetaCache();
-
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling LoadMetaCache!\n");
-	}
 
 	//META_CACHE mc;
 
@@ -291,10 +283,6 @@ void ASCII_Remap(unsigned char * str) {
 }
 
 void SaveMetaCache() {
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling SaveMetaCache!\n");
-	}
-
 //	char buf[512];
 	uint32 deleted=0;
 

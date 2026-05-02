@@ -44,11 +44,6 @@ uint32 FileID(char * fn) {
 }
 
 void FreePlayList() {
-	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FreePlayList!\n");
-	}
-	RelMutexPtr(api->getQueueMutex());
 }
 
 QUEUE * GetRowToQueue(MYSQL_RES * res) {
@@ -91,9 +86,6 @@ QUEUE * GetQueueFromID(uint32 id) {
 
 QUEUE_FIND_RESULT * FindWild(const char * pat) {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindWild!\n");
-	}
 
 	QUEUE_FIND_RESULT * ret = (QUEUE_FIND_RESULT *)api->malloc(sizeof(QUEUE_FIND_RESULT));
 	memset(ret,0,sizeof(QUEUE_FIND_RESULT));
@@ -124,9 +116,6 @@ QUEUE_FIND_RESULT * FindWild(const char * pat) {
 
 QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindByMeta!\n");
-	}
 
 	QUEUE_FIND_RESULT * ret = (QUEUE_FIND_RESULT *)api->malloc(sizeof(QUEUE_FIND_RESULT));
 	memset(ret,0,sizeof(QUEUE_FIND_RESULT));
@@ -194,9 +183,7 @@ QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 
 void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FreeFindResult!\n");
-	}
+
 	for (int i=0; i < qRes->num; i++) {
 		api->FreeQueue(qRes->results[i]);
 	}
@@ -206,9 +193,6 @@ void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
 
 QUEUE * FindFile(const char * fn) {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindFile!\n");
-	}
 
 	QUEUE * ret = NULL;
 
@@ -228,9 +212,6 @@ QUEUE * FindFile(const char * fn) {
 
 QUEUE * FindFileByID(uint32 id) {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling FindFile!\n");
-	}
 
 	QUEUE * ret = NULL;
 
@@ -248,9 +229,6 @@ QUEUE * FindFileByID(uint32 id) {
 
 QUEUE * GetRandomFile() {
 	LockMutexPtr(api->getQueueMutex());
-	if (api->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		api->botapi->ib_printf("SimpleDJ -> QueueMutex should be locked when calling GetRandomFile!\n");
-	}
 
 //	char buf[4096];
 

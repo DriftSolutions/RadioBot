@@ -62,20 +62,20 @@ bool mp3_get_title_data(const char * fn, TITLE_DATA * td, uint32 * songlen) {
 	TagLib::FileRef iTag(fn);
 	if (!iTag.isNull() && iTag.tag() && !iTag.tag()->isEmpty()) {
 		TagLib::String p = iTag.tag()->title();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->title,p.toCString(true),sizeof(td->title));
 			ret = true;
 		}
 		p = iTag.tag()->artist();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->artist,p.toCString(true),sizeof(td->artist));
 		}
 		p = iTag.tag()->album();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->album,p.toCString(true),sizeof(td->album));
 		}
 		p = iTag.tag()->genre();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->genre,p.toCString(true),sizeof(td->genre));
 		}
 	}

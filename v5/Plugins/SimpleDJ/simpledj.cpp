@@ -96,10 +96,6 @@ bool MatchesNoPlayFilter(char * str) {
 }
 
 bool MatchFilter(QUEUE * Scan, TIMER * Timer, char * pat) {
-	if (QueueMutex->LockingThread() != GetCurrentThreadId()) {
-		api->ib_printf("SimpleDJ -> QueueMutex should be locked when calling MatchFilter!\n");
-	}
-
 	if (Timer->pat_type == TIMER_PAT_TYPE_FILENAME) {
 		//api->botapi->ib_printf("SimpleDJ -> Completed Pattern: %s\n", pat);
 		//api->botapi->LogToChan(buf);
@@ -142,9 +138,7 @@ bool MatchFilter(QUEUE * Scan, TIMER * Timer, char * pat) {
 }
 
 void AddToQueue(QUEUE * q, QUEUE ** qqFirst, QUEUE ** qqLast) {
-	if (QueueMutex->LockingThread() != GetCurrentThreadId()) {
-		api->ib_printf("SimpleDJ -> QueueMutex should be locked when calling AddToQueue!\n");
-	}
+
 	QUEUE *fQue = *qqFirst;
 	QUEUE *lQue = *qqLast;
 	q->Next = NULL;
@@ -193,9 +187,7 @@ int ReadMetaData(const char * fn, TITLE_DATA * td) {// retval: 0 title based on 
 }
 
 void ScanDirectory(char * path, QUEUE ** qqFirst, QUEUE ** qqLast, int32 * num_files) {
-	if (QueueMutex->LockingThread() != GetCurrentThreadId()) {
-		api->ib_printf("SimpleDJ -> QueueMutex should be locked when calling Scan Directory!\n");
-	}
+
 	//QUEUE *fQue = *qqFirst;
 	//QUEUE *lQue = *qqLast;
 
@@ -1451,9 +1443,7 @@ typedef std::map<uint32, time_t> RequestListType;
 RequestListType requestList;
 
 bool AllowRequest(QUEUE * Scan) {
-	if (QueueMutex->LockingThread() != GetCurrentThreadId()) {
-		api->ib_printf("SimpleDJ -> QueueMutex should be locked when calling AllowRequest!\n");
-	}
+
 	if (sd_config.Options.MinReqTimePerSong == 0) { return true; }
 	RequestListType::iterator s = requestList.begin();
 	while (s != requestList.end()) {
@@ -1475,9 +1465,6 @@ bool AllowRequest(QUEUE * Scan) {
 }
 
 int AddRequest(QUEUE * Scan, bool to_front) {
-	if (QueueMutex->LockingThread() != GetCurrentThreadId()) {
-		api->ib_printf("SimpleDJ -> QueueMutex should be locked when calling AddRequest!\n");
-	}
 
 	int ret=0;
 	Scan->Next = NULL;
