@@ -22,7 +22,7 @@
 //@AUTOHEADER@END@
 
 
-extern Titus_Mutex comMutex;
+extern DSL_Mutex comMutex;
 #if !defined(OLD_COMTRACK)
 typedef std::vector<COMMAND *> commandList;
 extern commandList commands;

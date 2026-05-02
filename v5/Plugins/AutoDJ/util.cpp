@@ -44,9 +44,11 @@ const char * GetDeckName(AUTODJ_DECKS deck) {
 }
 
 void AddToQueue(QUEUE * q, QUEUE ** qqFirst, QUEUE ** qqLast) {
+	/*
 	if (QueueMutex.LockingThread() != GetCurrentThreadId()) {
 		api->ib_printf2(pluginnum,_("AutoDJ -> QueueMutex should be locked when calling AddToQueue!\n"));
 	}
+	*/
 	QUEUE *fQue = *qqFirst;
 	QUEUE *lQue = *qqLast;
 	q->Next = NULL;

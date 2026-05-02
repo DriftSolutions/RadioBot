@@ -66,7 +66,7 @@ QUEUE *rQue=NULL; // request queue
 //QUEUE *prFirst=NULL,*prLast=NULL;
 //QUEUE *prCur = NULL;
 
-Titus_TimedMutex QueueMutex;
+DSL_Mutex QueueMutex;
 
 ArtistListType artistList;
 RequestListType requestList;
@@ -1715,9 +1715,11 @@ bool ShouldIStop() {
 }
 
 bool AllowRequest(QUEUE * Scan, USER_PRESENCE * ut) {
+	/*
 	if (QueueMutex.LockingThread() != GetCurrentThreadId()) {
 		api->ib_printf2(pluginnum,"AutoDJ -> QueueMutex should be locked when calling AllowRequest!\n");
 	}
+	*/
 	AutoMutex(QueueMutex);
 
 	if (ad_config.lock_user && ut->User != ad_config.lock_user) {
@@ -1788,9 +1790,11 @@ bool AllowRequest(QUEUE * Scan, USER_PRESENCE * ut) {
 }
 
 int AddRequest(QUEUE * Scan, const char * nick, bool to_front) {
+	/*
 	if (QueueMutex.LockingThread() != GetCurrentThreadId()) {
 		api->ib_printf2(pluginnum,"AutoDJ -> QueueMutex should be locked when calling AddRequest!\n");
 	}
+	*/
 	AutoMutex(QueueMutex);
 
 	int ret=0;

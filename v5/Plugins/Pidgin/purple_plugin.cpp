@@ -102,14 +102,16 @@ bool send_pidgin_pm(USER_PRESENCE * ut, const char * str) {
 	LockMutex(hMutex);
 	PIDGIN_REF_HANDLE * h = (PIDGIN_REF_HANDLE *)ut->Ptr1;
 	if (pidgin_config.connected && socks.IsKnownSocket(h->sock)) {
-		Titus_Buffer buf;
-		buf.Append_uint64(h->convid);
-		buf.Append(str, strlen(str)+1);
+		DSL_BUFFER buf = { 0 };
+		buffer_init(&buf);
+		buffer_append_int<uint64>(&buf, h->convid);
+		buffer_append(&buf, str, strlen(str) + 1);
 		if (h->is_chat) {
-			send_packet(h->sock, IMB_CHAT_SEND, buf.GetLen(), buf.Get());
+			send_packet(h->sock, IMB_CHAT_SEND, buf.len, buf.data);
 		} else {
-			send_packet(h->sock, IMB_IM_SEND, buf.GetLen(), buf.Get());
+			send_packet(h->sock, IMB_IM_SEND, buf.len, buf.data);
 		}
+		buffer_free(&buf);
 	}
 	RelMutex(hMutex);
 	return true;

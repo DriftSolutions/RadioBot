@@ -239,19 +239,22 @@ SSMT_API void LibSSMT_AddItem(SSMT_TAG * Scan, uint32 name, const char * str) {
 }
 
 SSMT_API bool LibSSMT_WriteTag(SSMT_CTX * ctx, SSMT_TAG * tag) {
-	Titus_Buffer buf;
+	DSL_BUFFER buf;
+	buffer_init(&buf);
 	for (int i=0; i < tag->num_items; i++) {
 		SSMT_HEADER h;
 		h.name = Get_UBE32(tag->items[i].name);
 		h.len = Get_UBE32(SynchInt(tag->items[i].length));
-		buf.Append((const char *)&h, sizeof(h));
-		buf.Append(tag->items[i].str, tag->items[i].length);
+		buffer_append(&buf, (const char *)&h, sizeof(h));
+		buffer_append(&buf, tag->items[i].str, tag->items[i].length);
 	}
 	SSMT_HEADER h;
 	h.name = Get_UBE32(SSMT_MAGIC);
-	h.len = Get_UBE32(SynchInt(buf.GetLen()));
-	buf.Prepend((const char *)&h, sizeof(h));
-	return (fwrite(buf.Get(), buf.GetLen(), 1, ctx->fp) == 1) ? true:false;
+	h.len = Get_UBE32(SynchInt(buf.len));
+	buffer_prepend(&buf, (const char *)&h, sizeof(h));
+	bool ret = (fwrite(buf.data, buf.len, 1, ctx->fp) == 1) ? true:false;
+	buffer_free(&buf);
+	return ret;
 }
 
 SSMT_API bool LibSSMT_WriteFile(SSMT_CTX * ctx, void * data, size_t len) {

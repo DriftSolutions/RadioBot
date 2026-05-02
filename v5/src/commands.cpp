@@ -30,9 +30,6 @@ commandList commands;
 HOOKS *fHook=NULL, *lHook=NULL;
 
 bool IsValidCommand(COMMAND * com) {
-	if (comMutex.LockingThread() != GetCurrentThreadId()) {
-		ib_printf(_("%s: comMutex should be locked when calling IsValidCommand\n"), IRCBOT_NAME);
-	}
 	for (commandList::const_iterator x = commands.begin(); x != commands.end(); x++) {
 		if (*x == com) {
 			return true;
@@ -180,9 +177,6 @@ void RegisterCommandHook(const char * command, CommandProcType hook_func) {
 
 HOOKS * FindHook(const char * command, CommandProcType hook_func) {
 	comMutex.Lock();
-	if (comMutex.LockingThread() != GetCurrentThreadId()) {
-		ib_printf(_("%s: comMutex should be locked when calling FindHook\n"), IRCBOT_NAME);
-	}
 	HOOKS * Scan = fHook;
 	while (Scan) {
 		if (!stricmp(Scan->command, command) && Scan->proc == hook_func) {
@@ -281,9 +275,6 @@ void DumpCommands() {
 
 COMMAND * EnumCommandsByFlags(COMMAND * Start, uint32 flags, uint32 flags_not, uint32 mask, int plugfilt) {
 	comMutex.Lock();
-	if (comMutex.LockingThread() != GetCurrentThreadId()) {
-		ib_printf(_("%s: comMutex should be locked when calling FindCommand with lock=false\n"), IRCBOT_NAME);
-	}
 
 	commandList::iterator x;// = (Start != NULL) ? FindCommand(Start):commands.begin();
 	if (Start == NULL) {

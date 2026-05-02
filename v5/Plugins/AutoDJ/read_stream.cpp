@@ -42,7 +42,7 @@ struct READER_HANDLE_STREAM {
 	bool has_meta;
 
 	bool mmsh;
-	Titus_Buffer * buffer;
+	DSL_BUFFER * buffer;
 };
 
 int64 read_stream_seek(READER_HANDLE * fp, int64 offset, int32 mode) {
@@ -114,10 +114,10 @@ int32 read_stream_read(void * buf, int32 size, READER_HANDLE * fp) {
 
 	} else {
 		if (hs->mmsh) {
-			if (hs->buffer->GetLen() > 0) {
-				n = hs->buffer->GetLen() >= size ? size : hs->buffer->GetLen();
-				hs->buffer->Get((char *)buf, n);
-				hs->buffer->RemoveFromBeginning(n);
+			if (hs->buffer->len > 0) {
+				n = (hs->buffer->len >= size) ? size : hs->buffer->len;
+				memcpy(buf, hs->buffer->data, n);
+				buffer_remove_front(hs->buffer, n);
 			}
 			if (n < size) {
 				MMSH_PACKET pack;
@@ -140,15 +140,15 @@ int32 read_stream_read(void * buf, int32 size, READER_HANDLE * fp) {
 								//to = (MMSH_TYPEOBJ *)buf2;
 								buf2 += sizeof(MMSH_TYPEOBJ);
 								pack.len -= sizeof(MMSH_TYPEOBJ);
-								hs->buffer->Append(buf2, pack.len);
+								buffer_append(hs->buffer, buf2, pack.len);
 								FILE * fp2 = fopen("stream.bin", "ab");
 								if (fp2) {
 									fwrite(buf2, pack.len, 1, fp2);
 									fclose(fp2);
 								}
-								int toRead = hs->buffer->GetLen() >= size ? size : hs->buffer->GetLen();
-								hs->buffer->Get((char *)buf + n, toRead);
-								hs->buffer->RemoveFromBeginning(toRead);
+								int toRead = (hs->buffer->len >= size) ? size : hs->buffer->len;
+								memcpy((char*)buf + n, hs->buffer->data, toRead);
+								buffer_remove_front(hs->buffer, toRead);
 								n += toRead;
 								buf2 -= sizeof(MMSH_TYPEOBJ);
 							}
@@ -186,7 +186,7 @@ bool read_stream_eof(READER_HANDLE * fp) {
 void read_stream_close(READER_HANDLE * fp) {
 	READER_HANDLE_STREAM * hs = (READER_HANDLE_STREAM *)fp->data;
 	ad_config.sockets->Close(hs->sock);
-	if (hs->buffer) { delete hs->buffer; }
+	if (hs->buffer) { buffer_free(hs->buffer); delete hs->buffer; }
 	if (fp->desc) { zfree(fp->desc); }
 	if (fp->fn) { zfree(fp->fn); }
 	delete hs;
@@ -330,7 +330,8 @@ READER_HANDLE * read_stream_open(const char * fn, int32 mode) {
 	if (!hs->bufsize) { hs->bufsize = 8192; }
 
 	hs->mmsh = mmsh;
-	hs->buffer = new Titus_Buffer;
+	hs->buffer = new DSL_BUFFER;
+	buffer_init(hs->buffer);
 	ret->data = hs;
 
 	ret->can_seek = false;

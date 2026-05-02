@@ -234,8 +234,8 @@ extern int pluginnum;
 DL_HANDLE getInstance();
 bool AllowSongPlayback(const QUEUE * Scan, time_t tme, const char * pat);
 
-extern Titus_Mutex RepMutex;
-extern Titus_TimedMutex QueueMutex;
+extern DSL_Mutex RepMutex;
+extern DSL_Mutex QueueMutex;
 extern AD_CONFIG ad_config;
 extern READER readers[];
 extern FEEDER feeders[];

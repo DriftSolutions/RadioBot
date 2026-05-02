@@ -36,9 +36,11 @@ void knuthShuffle(RandomAccessIterator begin, RandomAccessIterator end) {
 }
 
 void ScanDirectory(const char * path, int32 * num_files) {
+	/*
 	if (QueueMutex.LockingThread() != GetCurrentThreadId()) {
 		api->ib_printf2(pluginnum,_("AutoDJ -> QueueMutex should be locked when calling Scan Directory!\n"));
 	}
+	*/
 	//QUEUE *fQue = *qqFirst;
 	//QUEUE *lQue = *qqLast;
 
