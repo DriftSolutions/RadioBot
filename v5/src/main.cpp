@@ -566,6 +566,21 @@ int BotMain(int argc, char *argv[]) {
 			return 1;
 		}
 
+#if defined(IRCBOT_ENABLE_IRC)
+		if (config.num_irc <= 0) {
+			// disable IRC APIs
+			GetAPI()->irc = NULL;
+			GetAPI()->ial = NULL;
+		}
+#endif
+#if defined(IRCBOT_ENABLE_SS)
+		if (config.num_ss <= 0) {
+			// disable sound server APIs
+			GetAPI()->ss = NULL;
+			GetAPI()->yp = NULL;
+		}
+#endif
+
 		ib_printf(_("%s: Configuration loaded.\n"), IRCBOT_NAME);
 
 #if defined(WIN32) && WINVER >= 0x0600
@@ -730,9 +745,11 @@ int BotMain(int argc, char *argv[]) {
 		Query("PRAGMA case_sensitive_like=OFF;");
 
 #if defined(IRCBOT_ENABLE_SS)
-		if (!InitRatings()) {
-			if (config.base.EnableRatings) { ib_printf(_("%s: Error enabling ratings, disabled.\n"), IRCBOT_NAME); }
-			config.base.EnableRatings = false;
+		if (config.num_ss > 0) {
+			if (!InitRatings()) {
+				if (config.base.EnableRatings) { ib_printf(_("%s: Error enabling ratings, disabled.\n"), IRCBOT_NAME); }
+				config.base.EnableRatings = false;
+			}
 		}
 #endif
 
@@ -809,15 +826,19 @@ int BotMain(int argc, char *argv[]) {
 #if defined(IRCBOT_ENABLE_IRC)
 		TT_StartThread(SendQ_Thread, NULL, _("SendQ"));
 
-		for (i=0; i < config.num_irc; i++) {
-			sprintf(curline, _("ircThread %d"), i);
-			TT_StartThread(ircThread,(void *)i,curline);
-			//safe_sleep(1);
+		if (config.num_irc) {
+			for (i = 0; i < config.num_irc; i++) {
+				sprintf(curline, _("ircThread %d"), i);
+				TT_StartThread(ircThread, (void*)i, curline);
+				//safe_sleep(1);
+			}
 		}
 #endif
 
 #if defined(IRCBOT_ENABLE_SS)
-		TT_StartThread(scThread, NULL, _("Sound Server Info Grabber"));
+		if (config.num_ss) {
+			TT_StartThread(scThread, NULL, _("Sound Server Info Grabber"));
+		}
 #endif
 		TT_StartThread(IdleThread, NULL, _("Idle Thread"));
 
@@ -866,7 +887,9 @@ int BotMain(int argc, char *argv[]) {
 
 		UnregisterCommandAliases();
 #if defined(IRCBOT_ENABLE_SS)
-		ExpireFindResults(true);
+		if (config.num_ss > 0) {
+			ExpireFindResults(true);
+		}
 #endif
 
 		ib_printf(_("%s: Shutting down plugins...\n"), IRCBOT_NAME);

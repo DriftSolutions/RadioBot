@@ -46,7 +46,7 @@ Titus_Mutex queMutex;
 WEB_QUEUE *wQue=NULL;
 PING_QUEUE *pingQue=NULL;
 
-typedef std::map<std::string, time_t, ci_less> weatherNicksType;
+typedef map<string, time_t, ci_less> weatherNicksType;
 weatherNicksType weatherNicks;
 
 bool AllowWeatherNick(const char * nick) {
@@ -228,7 +228,11 @@ int Welcome_Commands(const char * command, const char * parms, USER_PRESENCE * u
 	}
 
 	if (!stricmp(command, "8ball")) {
-		sprintf(buf,"\x02%s\x02, The Magic 8 Ball Says: \x02%s\x02\n",ut->Nick,ballmessages[api->genrand_int32()%20]);
+		if (!stricmp(ut->Desc, "IRC")) {
+			sprintf(buf, "\x02%s\x02, The Magic 8 Ball Says: \x02%s\x02\n", ut->Nick, ballmessages[api->genrand_int32() % 20]);
+		} else {
+			sprintf(buf, "%s, The Magic 8 Ball Says: %s\n", ut->Nick, ballmessages[api->genrand_int32() % 20]);
+		}
 		if (ut->Channel) {
 			ut->send_chan(ut, buf);
 		} else {
@@ -438,10 +442,12 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	pluginnum=num;
 	api=(BOTAPI_DEF *)BotAPI;
 
+	/*
 	if (api->irc == NULL) {
 		api->ib_printf2(pluginnum,_("Welcome Plugin -> This version of RadioBot is not supported!\n"));
 		return 0;
 	}
+	*/
 
 	sockets = new Titus_Sockets();
 	api->db->Query("CREATE TABLE IF NOT EXISTS Weather (ID INTEGER PRIMARY KEY AUTOINCREMENT, Nick VARCHAR(255), City VARCHAR(255), IsCelcius TINYINT DEFAULT 0, TimeStamp INT DEFAULT 0);", NULL, NULL, NULL);
@@ -488,16 +494,7 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 void quit() {
 	api->ib_printf(_("Welcome Plugin -> Shutting down...\n"));
 	wel_config.shutdown_now=true;
-	api->commands->UnregisterCommandByName("calc");
-	api->commands->UnregisterCommandByName("8ball");
-	api->commands->UnregisterCommandByName("spinbottle");
-	api->commands->UnregisterCommandByName("weather");
-	api->commands->UnregisterCommandByName("weather_public");
-	api->commands->UnregisterCommandByName("youtube");
-	api->commands->UnregisterCommandByName("wordnik");
-	api->commands->UnregisterCommandByName("tinyurl");
-	api->commands->UnregisterCommandByName("bing");
-	api->commands->UnregisterCommandByName("ping");
+	api->commands->UnregisterCommandsByPlugin(pluginnum);
 	while (TT_NumThreadsWithID(pluginnum)) {
 		TT_PrintRunningThreadsWithID(pluginnum);
 		api->safe_sleep_seconds(1);
@@ -583,7 +580,7 @@ int message(unsigned int MsgID, char * data, int datalen) {
 		case IB_ONJOIN:{
 				char buf[4096],buf2[256];
 				USER_PRESENCE * oj = (USER_PRESENCE *)data;
-				if (oj == NULL) { return 0; }
+				if (oj == NULL || api->irc == NULL) { return 0; }
 				if (stricmp(oj->Nick, api->irc->GetCurrentNick(oj->NetNo))) {
 					for (int i=0; i < 4; i++) {
 						if (oj->Flags & w_levels[i].flag) {

@@ -751,7 +751,7 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	}
 	*/
 	if (api->ss == NULL) {// || !(api->GetVersion() & (IRCBOT_VERSION_FLAG_FULL|IRCBOT_VERSION_FLAG_STANDALONE))
-		api->ib_printf2(pluginnum,_("AutoDJ -> This version of RadioBot is not supported!\n"));
+		api->ib_printf2(pluginnum,_("AutoDJ -> Either you don't have any sound servers defined or this version of RadioBot is not supported!\n"));
 		return 0;
 	}
 

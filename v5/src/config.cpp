@@ -52,7 +52,7 @@ bool CheckConfig() {
 	if (config.num_ss == 0) {
 		ib_printf(_("%s: Configuration Error -> no SHOUTCast/Icecast2 Servers found!\n"), IRCBOT_NAME);
 		ib_printf(_("%s: Make sure there is a SS section in your config.\n"), IRCBOT_NAME);
-		return false;
+		//return false;
 	}
 #endif
 	return true;

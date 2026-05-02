@@ -860,8 +860,8 @@ typedef struct {
 	 * @param priority The priority of the string from 0-99, with 0 being least important and 99 being most important. @sa PRIORITY_IMMEDIATE @sa PRIORITY_INTERACTIVE @sa PRIORITY_DEFAULT @sa PRIORITY_SPAM @sa PRIORITY_LOWEST
 	 * @return The length of the string queued, or -1 on error
 	 */
-	int DEPRECATE (*SendSock_Priority)(T_SOCKET * sock, const char * buf, int32 datalen, uint8 priority, uint32 delay);
-	void DEPRECATE (*ClearSockEntries)(T_SOCKET * sock); ///< Removes any queued sends for the specified socket.
+	//int DEPRECATE (*SendSock_Priority)(T_SOCKET * sock, const char * buf, int32 datalen, uint8 priority, uint32 delay);
+	//void DEPRECATE (*ClearSockEntries)(T_SOCKET * sock); ///< Removes any queued sends for the specified socket.
 	// ^- I don't think anything uses these 2 anymore in plugins, but they could potentially be used in command handlers as long as you verify they are IRC connections.
 
 	bool (*GetDoSpam)(); ///< Gets the value of the global DoSpam flag
