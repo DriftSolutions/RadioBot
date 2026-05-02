@@ -25,12 +25,18 @@
 
 #define AVIO_BUFFER_SIZE 32768
 
+#if LIBAVFORMAT_VERSION_MAJOR >= 61
+#  define AVIO_WRITE_PACKET_CONST const
+#else
+#  define AVIO_WRITE_PACKET_CONST
+#endif
+
 int autodj_read(void *h, uint8_t *buf, int size) {
 	READER_HANDLE * rh = (READER_HANDLE *)h;
 	return rh->read(buf, size, rh);
 }
 
-int autodj_write(void *h, const uint8_t *buf, int size) {
+int autodj_write(void *h, AVIO_WRITE_PACKET_CONST uint8_t *buf, int size) {
 	READER_HANDLE * rh = (READER_HANDLE *)h;
 	return rh->write((void *)buf, size, rh);
 }
@@ -71,7 +77,7 @@ int ffmpegenc_read(void *h, uint8_t * buf, int size) {
 	return -1;
 }
 
-int ffmpegenc_write(void *h, const uint8_t * buf, int size) {
+int ffmpegenc_write(void *h, AVIO_WRITE_PACKET_CONST uint8_t * buf, int size) {
 	//READER_HANDLE * rh = (READER_HANDLE *)h;
 	if (adapi->GetFeeder()->Send((unsigned char *)buf, size)) {
 		return size;
