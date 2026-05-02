@@ -77,23 +77,23 @@ inline bool aac_finish_get_title_data(TagLib::MPEG::File * iTag, TITLE_DATA * td
 
 	if (iTag->tag() && !iTag->tag()->isEmpty()) {
 		TagLib::String p = iTag->tag()->title();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->title, p.toCString(true), sizeof(td->title));
 		}
 		p = iTag->tag()->artist();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->artist, p.toCString(true), sizeof(td->artist));
 		}
 		p = iTag->tag()->album();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->album, p.toCString(true), sizeof(td->album));
 		}
 		p = iTag->tag()->genre();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->genre, p.toCString(true), sizeof(td->genre));
 		}
 		p = iTag->tag()->comment();
-		if (!p.isNull()) {
+		if (!p.isEmpty()) {
 			strlcpy(td->comment, p.toCString(true), sizeof(td->comment));
 		}
 		td->track_no = iTag->tag()->track();
@@ -104,12 +104,15 @@ inline bool aac_finish_get_title_data(TagLib::MPEG::File * iTag, TITLE_DATA * td
 		strtrim(td->genre);
 		strtrim(td->comment);
 
-		TagLib::ID3v2::Tag * tag2 = iTag->ID3v2Tag(false);
+		TagLib::ID3v2::Tag* tag2 = iTag->ID3v2Tag(false);
 		if (tag2 != NULL) {
-			TagLib::ID3v2::FrameList l = tag2->frameListMap()["TPE2"];
-			if (!l.isEmpty()) {
-				strlcpy(td->album_artist, l.front()->toString().toCString(true), sizeof(td->album_artist));
-				strtrim(td->album_artist);
+			auto x = tag2->frameListMap().find("TPE2");
+			if (x != tag2->frameListMap().end()) {
+				auto l = *x->second.begin();
+				if (!l->toString().isEmpty()) {
+					strlcpy(td->album_artist, l->toString().toCString(true), sizeof(td->album_artist));
+					strtrim(td->album_artist);
+				}
 			}
 		}
 		if (strlen(td->title)) {

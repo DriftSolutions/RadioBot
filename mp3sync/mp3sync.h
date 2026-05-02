@@ -55,9 +55,9 @@ typedef int ssize_t;
 #include <fileref.h>
 
 #include <lame/lame.h>
-#include <mpegfile.h>
-#include <id3v1tag.h>
-#include <id3v2tag.h>
+#include <mpeg/mpegfile.h>
+#include <mpeg/id3v1/id3v1tag.h>
+#include <mpeg/id3v2/id3v2tag.h>
 
 #if defined(WIN32)
 	#if defined(DEBUG)

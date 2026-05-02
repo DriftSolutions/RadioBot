@@ -30,7 +30,7 @@ int autodj_read(void *h, uint8_t *buf, int size) {
 	return rh->read(buf, size, rh);
 }
 
-int autodj_write(void *h, uint8_t *buf, int size) {
+int autodj_write(void *h, const uint8_t *buf, int size) {
 	READER_HANDLE * rh = (READER_HANDLE *)h;
 	return rh->write((void *)buf, size, rh);
 }
@@ -67,11 +67,11 @@ void adj_destroy_read_handle(AVIOContext *h) {
 }
 
 
-int ffmpegenc_read(void *h, unsigned char *buf, int size) {
+int ffmpegenc_read(void *h, uint8_t * buf, int size) {
 	return -1;
 }
 
-int ffmpegenc_write(void *h, unsigned char *buf, int size) {
+int ffmpegenc_write(void *h, const uint8_t * buf, int size) {
 	//READER_HANDLE * rh = (READER_HANDLE *)h;
 	if (adapi->GetFeeder()->Send((unsigned char *)buf, size)) {
 		return size;

@@ -295,9 +295,8 @@ bool FFMPEG_Encoder::Encode(int samples, const short buf2[]) {
 void FFMPEG_Encoder::Close() {
 	if (ast) {
 		LockMutex(ffmpegMutex);
-		avcodec_close(codec_ctx);
-		RelMutex(ffmpegMutex);
 		avcodec_free_context(&codec_ctx);
+		RelMutex(ffmpegMutex);
 		ast = NULL;
 	}
 

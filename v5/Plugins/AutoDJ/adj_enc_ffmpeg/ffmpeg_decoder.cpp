@@ -525,7 +525,6 @@ void ffmpeg_Decoder::Close() {
 	}
 	if (ffmpeg_codecctx) {
 		LockMutex(ffmpegMutex);
-		avcodec_close(ffmpeg_codecctx);
 		avcodec_free_context(&ffmpeg_codecctx);
 		RelMutex(ffmpegMutex);
 		ffmpeg_codecctx = NULL;
