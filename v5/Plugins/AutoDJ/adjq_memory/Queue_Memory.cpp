@@ -154,9 +154,12 @@ QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 }
 
 void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
+	AutoMutexPtr(adapi->getQueueMutex());
+	/*
 	if (adapi->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
 		adapi->botapi->ib_printf(_("AutoDJ -> QueueMutex should be locked when calling FreeFindResult!\n"));
 	}
+	*/
 	for (int i=0; i < qRes->num; i++) {
 		adapi->FreeQueue(qRes->results[i]);
 	}

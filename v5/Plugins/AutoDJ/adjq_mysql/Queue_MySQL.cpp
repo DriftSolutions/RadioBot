@@ -29,9 +29,11 @@ DB_MySQL conx;
 
 void FreePlayList() {
 	LockMutexPtr(adapi->getQueueMutex());
+	/*
 	if (adapi->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
 		adapi->botapi->ib_printf(_("AutoDJ -> QueueMutex should be locked when calling FreePlayList!\n"));
 	}
+	*/
 	RelMutexPtr(adapi->getQueueMutex());
 }
 
@@ -147,9 +149,6 @@ QUEUE_FIND_RESULT * FindWild(const char * pat) {
 
 QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 	LockMutexPtr(adapi->getQueueMutex());
-	if (adapi->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		adapi->botapi->ib_printf(_("AutoDJ -> QueueMutex should be locked when calling FindByMeta!\n"));
-	}
 
 	QUEUE_FIND_RESULT * ret = (QUEUE_FIND_RESULT *)adapi->malloc(sizeof(QUEUE_FIND_RESULT));
 	memset(ret,0,sizeof(QUEUE_FIND_RESULT));
@@ -235,9 +234,6 @@ QUEUE_FIND_RESULT * FindByMeta(const char * pat, META_TYPES type) {
 
 void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
 	LockMutexPtr(adapi->getQueueMutex());
-	if (adapi->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		adapi->botapi->ib_printf(_("AutoDJ -> QueueMutex should be locked when calling FreeFindResult!\n"));
-	}
 	for (int i=0; i < qRes->num; i++) {
 		adapi->FreeQueue(qRes->results[i]);
 	}
@@ -247,9 +243,6 @@ void FreeFindResult(QUEUE_FIND_RESULT * qRes) {
 
 QUEUE * FindFile(const char * fn) {
 	LockMutexPtr(adapi->getQueueMutex());
-	if (adapi->getQueueMutex()->LockingThread() != GetCurrentThreadId()) {
-		adapi->botapi->ib_printf(_("AutoDJ -> QueueMutex should be locked when calling FindFile!\n"));
-	}
 
 	QUEUE * ret = NULL;
 
@@ -728,7 +721,6 @@ int QM_Commands(const char * command, const char * parms, USER_PRESENCE * ut, ui
 			SC_Row row;
 			int i=1;
 			while (conx.FetchRow(res, row)) {
-				row.NumFields = row.NumFields;
 				QUEUE * song = GetQueueFromID(strtoul(row.Get("SongID").c_str(), NULL, 10));
 				sprintf(buf, _("%d. %s with %s requests"), i++, song ? song->fn:"Unknown Song", row.Get("Count").c_str());
 				if (song) { adapi->FreeQueue(song); }
@@ -752,7 +744,6 @@ int QM_Commands(const char * command, const char * parms, USER_PRESENCE * ut, ui
 			SC_Row row;
 			int i=1;
 			while (conx.FetchRow(res, row)) {
-				row.NumFields = row.NumFields;
 				sprintf(buf, _("%d. %s with %s requests"), i++, row.Get("Nick").c_str(), row.Get("Count").c_str());
 				ut->std_reply(ut, buf);
 			}

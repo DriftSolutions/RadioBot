@@ -46,7 +46,7 @@ struct CACHE_PL {
 };
 // cache comparison
 // returns true if s1 < s2
-struct comp_cpair : binary_function<CACHE_PAIR, CACHE_PAIR, bool> {
+struct comp_cpair {
   bool operator() (const CACHE_PAIR & s1, const CACHE_PAIR & s2) const
     {
 		if (s1.playlist != s2.playlist) {
