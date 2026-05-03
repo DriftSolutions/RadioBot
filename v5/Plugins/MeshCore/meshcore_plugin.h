@@ -34,7 +34,7 @@
 
 extern BOTAPI_DEF * api;
 extern int pluginnum;
-extern Titus_Mutex hMutex;
+extern DSL_Mutex hMutex;
 
 struct MESHCORE_CONFIG {
 	bool shutdown_now;
@@ -60,3 +60,7 @@ struct MESHCORE_REF_HANDLE {
 };
 
 extern MESHCORE_CONFIG meshcore_config;
+
+bool GetUserPubKey(const string& nick, string& pubkey);
+bool SaveUserPubKey(const string& nick, string& pubkey);
+int MeshCore_UserDB_Commands(const char* command, const char* parms, USER_PRESENCE* ut, uint32 type);

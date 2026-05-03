@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="meshcore_plugin.cpp" />
+    <ClCompile Include="meshcore_userdb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json.hpp" />

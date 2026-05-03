@@ -27,7 +27,7 @@ using json = nlohmann::json;
 
 BOTAPI_DEF * api = NULL;
 int pluginnum = 0;
-Titus_Mutex hMutex;
+DSL_Mutex hMutex;
 MESHCORE_CONFIG meshcore_config;
 static map<int, string> channel_names;
 
@@ -110,64 +110,89 @@ static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, c
 
 // ── outgoing message ──────────────────────────────────────────────────────
 
-bool send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg) {
+void _send_meshcore_msg_chan(MESHCORE_REF_HANDLE* h, string& topic, json& payload, const char* str) {
+	// reverse-lookup the channel index from the stored name
+	int send_idx = 0;
+	bool found = false;
+	for (const auto& kv : channel_names) {
+		if (kv.second == h->channel_name) {
+			send_idx = kv.first;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		// fallback names are formatted as "#channel-N"
+		const char* fallback_prefix = "#channel-";
+		size_t plen = strlen(fallback_prefix);
+		if (strncmp(h->channel_name, fallback_prefix, plen) == 0) {
+			send_idx = atoi(h->channel_name + plen);
+		}
+	}
+	payload["channel"] = send_idx;
+	payload["message"] = str;
+	topic = string(meshcore_config.topic_prefix) + "/command/send_chan_msg";
+}
+
+void _send_meshcore_msg_priv(MESHCORE_REF_HANDLE* h, const string& destination, string& topic, json& payload, const char* str) {
+	payload["destination"] = destination;
+	payload["message"] = str;
+	topic = string(meshcore_config.topic_prefix) + "/command/send_msg";
+}
+
+bool _send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg) {
 	LockMutex(hMutex);
+	bool ret = false;
 	MESHCORE_REF_HANDLE * h = (MESHCORE_REF_HANDLE *)ut->Ptr1;
 	if (meshcore_config.connected && meshcore_config.mosq) {
 		json payload;
 		string topic;
 		if (h->is_channel && !force_privmsg) {
-			// reverse-lookup the channel index from the stored name
-			int send_idx = 0;
-			bool found = false;
-			for (const auto& kv : channel_names) {
-				if (kv.second == h->channel_name) {
-					send_idx = kv.first;
-					found = true;
-					break;
-				}
+			string pk;
+			if (GetUserPubKey(h->nick, pk)) {
+				_send_meshcore_msg_priv(h, pk, topic, payload, str);
+			} else {
+				_send_meshcore_msg_chan(h, topic, payload, str);
 			}
-			if (!found) {
-				// fallback names are formatted as "#channel-N"
-				const char * fallback_prefix = "#channel-";
-				size_t plen = strlen(fallback_prefix);
-				if (strncmp(h->channel_name, fallback_prefix, plen) == 0) {
-					send_idx = atoi(h->channel_name + plen);
-				}
-			}
-			payload["channel"] = send_idx;
-			payload["message"] = str;
-			topic = string(meshcore_config.topic_prefix) + "/command/send_chan_msg";
 		} else {
-			payload["destination"] = string(h->nick);
-			payload["message"] = str;
-			topic = string(meshcore_config.topic_prefix) + "/command/send_msg";
+			_send_meshcore_msg_priv(h, h->nick, topic, payload, str);
 		}
 		string s = payload.dump();
+#ifdef DEBUG
 		api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
-		mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(),
-		                  (int)s.size(), s.c_str(), 0, false);
+#endif
+		int rc;
+		if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
+			ret = true;
+		} else {
+#ifndef WIN32
+			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
+#else
+			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
+#endif
+			api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+		}
 	}
 	RelMutex(hMutex);
-	return true;
+	return ret;
 }
 
 bool send_meshcore_channel(USER_PRESENCE* ut, const char* str) {
 	// send to channel if it was said in a channel, otherwise send nothing
 	if (ut->Channel != NULL) {
-		return send_meshcore_msg(ut, str, false);
+		return _send_meshcore_msg(ut, str, false);
 	}
 	return false;
 }
 
 bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str) {
 	// send PM to the user, even if they said something in-channel
-	return send_meshcore_msg(ut, str, true);
+	return _send_meshcore_msg(ut, str, true);
 }
 
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
-	// send PM to the user, even if they said something in-channel
-	return send_meshcore_msg(ut, str, false);
+	// send PM to the user, falling back to in-channel if they don't have a pubkey set
+	return _send_meshcore_msg(ut, str, false);
 }
 
 // ── incoming message handlers ─────────────────────────────────────────────
@@ -554,6 +579,16 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	} else {
 		api->ib_printf(_("MeshCore -> No 'MeshCore' section in ircbot.conf, using defaults...\n"));
 	}
+
+	api->db->Query("CREATE TABLE IF NOT EXISTS meshcore_users(ID INTEGER PRIMARY KEY AUTOINCREMENT, `Nick` TEXT COLLATE NOCASE UNIQUE, `PubKey` TEXT);", NULL, NULL, NULL);
+
+	COMMAND_ACL acl;
+	api->commands->FillACL(&acl, 0, UFLAG_DJ | UFLAG_HOP | UFLAG_OP | UFLAG_MASTER, 0);
+	api->commands->RegisterCommand_Proc(pluginnum, "meshcore-viewuserpubkey", &acl, CM_ALLOW_ALL_PRIVATE, MeshCore_UserDB_Commands, _("View nickname's pubkey"));
+
+	api->commands->FillACL(&acl, 0, UFLAG_OP | UFLAG_MASTER, 0);
+	api->commands->RegisterCommand_Proc(pluginnum, "meshcore-saveuserpubkey", &acl, CM_ALLOW_ALL_PRIVATE, MeshCore_UserDB_Commands, _("Save a pubkey for a nickname, so I can reply users who say things in-channel via DM"));
+	api->commands->RegisterCommand_Proc(pluginnum, "meshcore-deluserpubkey", &acl, CM_ALLOW_ALL_PRIVATE, MeshCore_UserDB_Commands, _("Delete the pubkey for a nickname"));
 
 	mosquitto_lib_init();
 	TT_StartThread(MeshCoreThread, NULL, _("MeshCore Thread"), pluginnum);

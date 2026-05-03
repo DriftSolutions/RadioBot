@@ -14,6 +14,9 @@
     <ClCompile Include="meshcore_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="meshcore_userdb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="meshcore_plugin.h">
