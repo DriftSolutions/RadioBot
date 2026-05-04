@@ -50,6 +50,7 @@ struct MESHCORE_CONFIG {
 	char self_node[128];
 	char self_pubkey[65];
 	bool connected;
+	int64 lastReceivedContacts;
 	struct mosquitto * mosq;
 };
 
@@ -61,6 +62,9 @@ struct MESHCORE_REF_HANDLE {
 
 extern MESHCORE_CONFIG meshcore_config;
 
-bool GetUserPubKey(const string& nick, string& pubkey);
+bool GetUserPubKey(const string& nick, string& pubkey, bool* was_from_db);
 bool SaveUserPubKey(const string& nick, string& pubkey);
+void AddLivePubKey(const string& nick, const string& pubkey);
+
 int MeshCore_UserDB_Commands(const char* command, const char* parms, USER_PRESENCE* ut, uint32 type);
+void sanitize_nick(char* nick);

@@ -37,6 +37,7 @@ static char meshcore_desc[] = "MeshCore";
 bool send_meshcore_channel(USER_PRESENCE* ut, const char* str);
 bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str);
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str);
+bool send_meshcore_get_contacts();
 
 // ── ref-counting ──────────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ bool _send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg
 		string topic;
 		if (h->is_channel && !force_privmsg) {
 			string pk;
-			if (GetUserPubKey(h->nick, pk)) {
+			if (GetUserPubKey(h->nick, pk, NULL)) {
 				_send_meshcore_msg_priv(h, pk, topic, payload, str);
 			} else {
 				_send_meshcore_msg_chan(h, topic, payload, str);
@@ -195,12 +196,45 @@ bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
 	return _send_meshcore_msg(ut, str, false);
 }
 
+bool send_meshcore_get_contacts() {
+	bool ret = false;
+	json payload = json::object();
+	string topic = string(meshcore_config.topic_prefix) + "/command/get_contacts";
+	string s = payload.dump();
+#ifdef DEBUG
+	api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
+#endif
+	int rc;
+	if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
+		ret = true;
+	} else {
+#ifndef WIN32
+		api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
+#else
+		api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
+#endif
+		api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+	}
+	return ret;
+}
+
 // ── incoming message handlers ─────────────────────────────────────────────
 
-static void sanitize_nick(char * nick) {
+void sanitize_nick(char * nick) {
 	str_replaceA(nick, strlen(nick) + 1, " ", "_");
 	str_replaceA(nick, strlen(nick) + 1, "!", "_");
 	str_replaceA(nick, strlen(nick) + 1, "@", "_");
+
+	char* p = nick;
+	while (*p) {
+		if (!isprint(*p)) {
+			memmove(p, p + 1, strlen(p));
+		} else {
+			p++;
+		}
+	}
+
+	strtrim(nick);
 }
 
 static void on_channel_msg(const char* from, const char* text, int channel_idx) {
@@ -359,10 +393,20 @@ static void on_mqtt_connect(struct mosquitto * mosq, void * userdata, int rc) {
 	snprintf(topic, sizeof(topic), "%s/channel_info", meshcore_config.topic_prefix);
 	mosquitto_subscribe(mosq, NULL, topic, 0);
 
+	snprintf(topic, sizeof(topic), "%s/contacts", meshcore_config.topic_prefix);
+	mosquitto_subscribe(mosq, NULL, topic, 0);
+
+	snprintf(topic, sizeof(topic), "%s/new_contact", meshcore_config.topic_prefix);
+	mosquitto_subscribe(mosq, NULL, topic, 0);
+
+	/*
 #ifdef DEBUG
 	snprintf(topic, sizeof(topic), "%s/#", meshcore_config.topic_prefix);
 	mosquitto_subscribe(mosq, NULL, topic, 0);
 #endif
+*/
+
+	send_meshcore_get_contacts();
 }
 
 static void on_mqtt_disconnect(struct mosquitto * mosq, void * userdata, int rc) {
@@ -371,6 +415,16 @@ static void on_mqtt_disconnect(struct mosquitto * mosq, void * userdata, int rc)
 	meshcore_config.connected = false;
 	channel_names.clear();
 	RelMutex(hMutex);
+}
+
+void _handle_contact(const json& e) {
+	if (e.contains("type") && e["type"].is_number_integer() && e.contains("public_key") && e["public_key"].is_string() && e.contains("adv_name") && e["adv_name"].is_string()) {
+		if (e["type"].get<int>() == 1) { // only learn Companion nodes
+			string pubkey = e["public_key"].get<string>();
+			string nick = e["adv_name"].get<string>();
+			AddLivePubKey(nick, pubkey);
+		}
+	}
 }
 
 static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const struct mosquitto_message * msg) {
@@ -398,6 +452,8 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 	string prefix_chan_info = string(meshcore_config.topic_prefix) + "/channel_info";
 	string prefix_chan      = string(meshcore_config.topic_prefix) + "/message/channel/";
 	string prefix_dir       = string(meshcore_config.topic_prefix) + "/message/direct/";
+	string prefix_contacts	= string(meshcore_config.topic_prefix) + "/contacts";
+	string prefix_new_contact = string(meshcore_config.topic_prefix) + "/new_contact";
 
 	if (topic == prefix_chan_info) {
 		if (payload.contains("channel_idx") && payload.contains("name") && payload["name"].is_string()) {
@@ -411,6 +467,19 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 			RelMutex(hMutex);
 			api->ib_printf(_("MeshCore -> Channel %d name: %s\n"), idx, name.c_str());
 		}
+		return;
+	}
+
+	if (topic == prefix_new_contact) {
+		_handle_contact(payload);
+		return;
+	}
+
+	if (topic == prefix_contacts) {
+		for (auto& e : payload) {
+			_handle_contact(e);
+		}
+		meshcore_config.lastReceivedContacts = time(NULL);
 		return;
 	}
 
@@ -456,6 +525,7 @@ THREADTYPE MeshCoreThread(void * lpData) {
 	RelMutex(hMutex);
 
 	time_t nextTry = time(NULL);
+	int64 lastReq = 0;
 
 	while (!meshcore_config.shutdown_now) {
 		if (meshcore_config.mosq == NULL && time(NULL) >= nextTry) {
@@ -504,8 +574,12 @@ THREADTYPE MeshCoreThread(void * lpData) {
 				mosquitto_destroy(meshcore_config.mosq);
 				meshcore_config.mosq = NULL;
 				meshcore_config.connected = false;
+				meshcore_config.lastReceivedContacts = 0;
 				RelMutex(hMutex);
 				nextTry = time(NULL) + 30;
+			} else if (time(NULL) - meshcore_config.lastReceivedContacts >= 3600 && time(NULL) - lastReq >= 60) {
+				send_meshcore_get_contacts();
+				lastReq = time(NULL);
 			}
 		} else {
 			safe_sleep(1);

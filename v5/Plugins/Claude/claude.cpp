@@ -1,7 +1,7 @@
 //@AUTOHEADER@BEGIN@
 /**********************************************************************\
 |                          ShoutIRC RadioBot                           |
-|           Copyright 2004-2023 Drift Solutions / Indy Sams            |
+|           Copyright 2004-2026 Drift Solutions / Indy Sams            |
 |        More information available at https://www.shoutirc.com        |
 |                                                                      |
 |                    This file is part of RadioBot.                    |
