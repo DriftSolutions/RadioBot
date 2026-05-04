@@ -207,7 +207,7 @@ static const size_t num_prompts = sizeof(prompts) / sizeof(const char *);
 int message_proc(unsigned int msg, char * data, int datalen) {
 	if (msg == IB_ONTEXT) {
 		IBM_USERTEXT * ut = (IBM_USERTEXT *)data;
-		if (ut->type == IBM_UTT_PRIVMSG && ut->userpres->User && !api->user->uflag_have_any_of(ut->userpres->Flags, UFLAG_IGNORE) && !api->commands->IsCommandPrefix(ut->text[0])) {
+		if (ut->type == IBM_UTT_PRIVMSG && !claude_config.shutdown_now && ut->userpres->User && !api->user->uflag_have_any_of(ut->userpres->Flags, UFLAG_IGNORE) && !api->commands->IsCommandPrefix(ut->text[0])) {
 			chatMutex.Lock();
 			shared_ptr<ChatHistory> c;
 			const char * nick = (ut->userpres->User != NULL) ? ut->userpres->User->Nick : ut->userpres->Nick;
@@ -280,7 +280,20 @@ int message_proc(unsigned int msg, char * data, int datalen) {
 				claude_config.songLeft = api->genrand_range(claude_config.songMin, claude_config.songMax);
 			}
 		}
+	} else if (msg == IB_SHUTDOWN) {
+		claude_config.shutdown_now = true;
+		//main listening socket will be closed by ChatThread when it exits
+		time_t timeo = time(NULL) + 30;
+		while (TT_NumThreadsWithID(pluginnum) && time(NULL) < timeo) {
+			api->ib_printf(_("Claude -> Waiting on (%d) threads to die...\n"), TT_NumThreadsWithID(pluginnum));
+			api->safe_sleep_seconds(1);
+		}
+		chatMutex.Lock();
+		sessions.clear();
+		new_messages.clear();
+		chatMutex.Release();
 	}
+
 	return 0;
 }
 
