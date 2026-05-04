@@ -225,7 +225,6 @@ int message_proc(unsigned int msg, char * data, int datalen) {
 			chatMutex.Release();
 		}
 	} else if (msg == IB_SS_DRAGCOMPLETE) {
-		/*
 		bool * has_changed = (bool *)data;
 		if (*has_changed) {
 			if (--claude_config.songLeft <= 0) {
@@ -250,15 +249,37 @@ int message_proc(unsigned int msg, char * data, int datalen) {
 				str_replace(buf, sizeof(buf), "%songpart%", songpart);
 				str_replace(buf, sizeof(buf), "%bandpart%", bandpart);
 				api->ProcText(buf, sizeof(buf));
-				string str;
-				if (claude_query(buf, str)) {
-					//api->BroadcastMsg(NULL, buf);
-					api->BroadcastMsg(NULL, str.c_str());
+				ClaudeMessage msg;
+				msg.role = "user";
+				msg.content = buf;
+				list<ClaudeMessage> context = { msg };
+				list<ClaudeMessage> reply;
+				if (claude_query(context, reply)) {
+					for (auto& x : reply) {
+						if (!x.content.empty()) {
+							char* tmp = strdup(x.content.c_str());
+							str_replace(tmp, strlen(tmp) + 1, "\r", "");
+							while (strstr(tmp, "\n\n") != NULL) {
+								str_replace(tmp, strlen(tmp) + 1, "\n\n", "\n");
+							}
+							char* p2 = NULL;
+							char* p = strtok_r(tmp, "\n", &p2);
+							while (p != NULL) {
+								char* tmp2 = strdup(p);
+								strtrim(tmp2);
+								if (tmp2[0]) {
+									api->BroadcastMsg(NULL, tmp2);
+								}
+								free(tmp2);
+								p = strtok_r(NULL, "\n", &p2);
+							}
+							free(tmp);
+						}
+					}
 				}
 				claude_config.songLeft = api->genrand_range(claude_config.songMin, claude_config.songMax);
 			}
 		}
-		*/
 	}
 	return 0;
 }
