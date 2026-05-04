@@ -157,6 +157,14 @@ void do_telnet_get_pass(TelnetSession * ses, char * buf) {
 }
 
 void do_telnet_cmd(TelnetSession * ses, char * buf, size_t len) {
+	IBM_USERTEXT ut;
+	ut.userpres = ses->Pres;
+	ut.type = IBM_UTT_PRIVMSG;
+	ut.text = buf;
+	if (api->SendMessage(-1, IB_ONTEXT, (char*)&ut, sizeof(ut))) {
+		return;
+	}
+
 	char *cmd2 = NULL;
 	char *cmd = strtok_r(buf, " ",&cmd2);
 	char *parms = NULL;
@@ -180,7 +188,7 @@ void do_telnet_cmd(TelnetSession * ses, char * buf, size_t len) {
 			TelnetSend(ses->sock,_("Bot console output disabled\r\n"));
 		}
 	} else {
-		TelnetSend(ses->sock,_("Unknown command\r\n"));
+		//TelnetSend(ses->sock,_("Unknown command\r\n"));
 	}
 	TelnetSend(ses->sock,"> ");
 }

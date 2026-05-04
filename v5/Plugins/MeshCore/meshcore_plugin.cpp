@@ -214,7 +214,7 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx) 
 	sstrcpy(nick, from);
 	sanitize_nick(nick);
 
-	string hostmask = mprintf("%s!%s@meshcore", nick, nick);
+	string hostmask = mprintf("%s!%s@channel.meshcore", nick, nick);
 	USER* user = api->user->GetUser(hostmask.c_str());
 	// translate channel index to its hashtag name
 	string chan_name;
@@ -284,7 +284,7 @@ static void on_direct_msg(const char * from, const char * text) {
 	sstrcpy(nick, from);
 	sanitize_nick(nick);
 
-	string hostmask = mprintf("%s!%s@meshcore", nick, nick);
+	string hostmask = mprintf("%s!%s@chat.meshcore", nick, nick);
 	USER * user = api->user->GetUser(hostmask.c_str());
 
 #ifdef DEBUG
