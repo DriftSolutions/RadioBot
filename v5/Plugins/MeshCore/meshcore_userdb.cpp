@@ -1,23 +1,62 @@
 #include "meshcore_plugin.h"
 
+string GetPubKeyPrefix(const string& pubkey) {
+	return pubkey.substr(0, 12);
+}
+
 struct MESHCORE_USER_PUBKEY {
 	set<string> pubkeys;
 	int64 lastHit = 0;
+	bool is_manual = false;
+
+	string GetPubKey() {
+		if (pubkeys.size() == 1) {
+			return *pubkeys.begin();
+		}
+		return "";
+	}
+
+	string GetPubKeyPrefix() {
+		if (pubkeys.size() == 1) {
+			return ::GetPubKeyPrefix(*pubkeys.begin());
+		}
+		return "";
+	}
+
+	void RemovePubKey(const string& pubkey) {
+		auto x = pubkeys.find(pubkey);
+		if (x != pubkeys.end()) {
+			pubkeys.erase(x);
+		}
+	}
 };
 
-map<string, MESHCORE_USER_PUBKEY> db_pubkeys;
-map<string, MESHCORE_USER_PUBKEY> live_pubkeys;
+map<string, MESHCORE_USER_PUBKEY, ci_less> pubkeys;
 
 string get_sanitized_nick(const string& str) {
-	char* p = strdup(str.c_str());
-	sanitize_nick(p);
-	strlwr(p);
-	string ret = p;
-	free(p);
+	char* nick = strdup(str.c_str());
+
+	str_replaceA(nick, strlen(nick) + 1, " ", "_");
+	str_replaceA(nick, strlen(nick) + 1, "!", "_");
+	str_replaceA(nick, strlen(nick) + 1, "@", "_");
+
+	char* p = nick;
+	while (*p) {
+		if (!isprint(*p)) {
+			memmove(p, p + 1, strlen(p));
+		} else {
+			p++;
+		}
+	}
+
+	strtrim(nick);
+	string ret = nick;
+	free(nick);
+
 	return ret;
 }
 
-void AddLivePubKey(const string& nick, const string& pubkey) {
+void AddPubKey(const string& nick, const string& pubkey, bool is_manual) {
 	if (nick.empty() || pubkey.empty()) {
 		return;
 	}
@@ -28,42 +67,55 @@ void AddLivePubKey(const string& nick, const string& pubkey) {
 	}
 
 	AutoMutex(hMutex);
-	auto x = live_pubkeys.find(p);
-	if (x != live_pubkeys.end()) {
+	auto x = pubkeys.find(p);
+	if (x != pubkeys.end()) {
 		x->second.lastHit = time(NULL);
-		x->second.pubkeys.insert(pubkey);
+		if (is_manual) {
 #ifdef DEBUG
-		api->ib_printf(_("MeshCore -> Updated live pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
+			api->ib_printf(_("MeshCore -> Manually set pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
 #endif
-		if (x->second.pubkeys.size() > 1) {
-			api->ib_printf(_("MeshCore -> WARNING: Nick % has more than one pubkey so they may be spoofing!\n"), nick.c_str());
+			x->second.pubkeys = { pubkey };
+			x->second.is_manual = is_manual;
+		} else {
+			x->second.pubkeys.insert(pubkey);
+#ifdef DEBUG
+			api->ib_printf(_("MeshCore -> Updated pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
+#endif
+			if (x->second.pubkeys.size() > 1) {
+				api->ib_printf(_("MeshCore -> WARNING: Nick %s (%s) has more than one pubkey so they may be spoofing!\n"), nick.c_str(), p.c_str());
+			}
 		}
 	} else {
 		MESHCORE_USER_PUBKEY pk;
 		pk.lastHit = time(NULL);
 		pk.pubkeys = { pubkey };
-		live_pubkeys[p] = std::move(pk);
+		pk.is_manual = is_manual;
+		pubkeys[p] = pk;
 #ifdef DEBUG
-		api->ib_printf(_("MeshCore -> Added new live pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
+		api->ib_printf(_("MeshCore -> Added new pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
 #endif
 	}
 
-#ifdef DEBUG
-	api->ib_printf(_("MeshCore -> Live cache size: %zu records\n"), live_pubkeys.size());
-#endif
+	for (x = pubkeys.begin(); x != pubkeys.end(); x++) {
+		if (stricmp(x->first.c_str(), p.c_str())) {
+			// Remove from any other records
+			x->second.RemovePubKey(pubkey);
+		}
+	}
 
-	if (live_pubkeys.size() > 1024) {
-		while (live_pubkeys.size() > 1000) { // clear oldest
+	if (pubkeys.size() > 1024) {
+		int tries = 0;
+		while (pubkeys.size() > 1000 && tries++ < 25) { // clear oldest
 			int64 oldest = INT64_MAX;
-			map<string, MESHCORE_USER_PUBKEY>::iterator toDel = live_pubkeys.end();
-			for (auto x = live_pubkeys.begin(); x != live_pubkeys.end(); x++) {
-				if (x->second.lastHit < oldest) {
+			map<string, MESHCORE_USER_PUBKEY>::iterator toDel = pubkeys.end();
+			for (auto x = pubkeys.begin(); x != pubkeys.end(); x++) {
+				if (x->second.lastHit < oldest && !x->second.is_manual) {
 					oldest = x->second.lastHit;
 					toDel = x;
 				}
 			}
-			if (toDel != live_pubkeys.end()) {
-				live_pubkeys.erase(toDel);
+			if (toDel != pubkeys.end()) {
+				pubkeys.erase(toDel);
 			} else {
 				// should never happen
 				break;
@@ -72,7 +124,7 @@ void AddLivePubKey(const string& nick, const string& pubkey) {
 	}
 }
 
-sql_rows GetTable(const char* query, char** errmsg = NULL) {
+sql_rows GetTable(const char* query, char** errmsg) {
 	//int GetTable(char * query, char ***resultp, int *nrow, int *ncolumn, char **errmsg) {
 	sql_rows rows;
 	int ret = 0, tries = 0;
@@ -108,48 +160,13 @@ sql_rows GetTable(const char* query, char** errmsg = NULL) {
 	return rows;
 }
 
-void cachePubKey(const string& nick, const string& pubkey) {
-	if (nick.empty() || pubkey.empty()) {
-		return;
-	}
-
-	MESHCORE_USER_PUBKEY pk;
-	pk.pubkeys = { pubkey };
-	pk.lastHit = time(NULL);
-	string p = get_sanitized_nick(nick);
-	AutoMutex(hMutex);
-	db_pubkeys[p] = std::move(pk);
-}
-
-void maintainCache() {
-	AutoMutex(hMutex);
-	if (db_pubkeys.size() >= 100) {
-		while (db_pubkeys.size() > 90) { // clear 10 oldest
-			int64 oldest = INT64_MAX;
-			map<string, MESHCORE_USER_PUBKEY>::iterator toDel = db_pubkeys.end();
-			for (auto x = db_pubkeys.begin(); x != db_pubkeys.end(); x++) {
-				if (x->second.lastHit < oldest) {
-					oldest = x->second.lastHit;
-					toDel = x;
-				}
-			}
-			if (toDel != db_pubkeys.end()) {
-				db_pubkeys.erase(toDel);			
-			} else {
-				// should never happen
-				break;
-			}
-		}
-	}
-}
-
 bool SaveUserPubKey(const string& nick, string& pubkey) {
 	char* q = api->db->MPrintf("REPLACE INTO meshcore_users (`Nick`,`PubKey`) VALUES (%Q, %Q)", nick.c_str(), pubkey.c_str());
 	bool ret = (api->db->Query(q, NULL, NULL, NULL) == SQLITE_OK);
 	api->db->Free(q);
 
 	if (ret) {
-		cachePubKey(nick, pubkey);		
+		AddPubKey(nick, pubkey, true);
 	}
 
 	return ret;
@@ -162,83 +179,47 @@ bool DelUserPubKey(const string& nick) {
 
 	string p = get_sanitized_nick(nick);
 	AutoMutex(hMutex);
-	auto x = db_pubkeys.find(p);
-	if (x != db_pubkeys.end()) {
-		db_pubkeys.erase(x);
+	auto x = pubkeys.find(p);
+	if (x != pubkeys.end()) {
+		pubkeys.erase(x);
 	}
 
 	return ret;
 }
-/*
-bool DelQuote(uint32 id) {
-	std::stringstream sstr;
-	sstr << "DELETE FROM quotes WHERE ID=" << id;
-	if (api->db->Query(sstr.str().c_str(), NULL, NULL, NULL) == SQLITE_OK) {
-		return true;
-	}
-	return false;
-}
-*/
 
 bool GetUserPubKey(const string& nick, string& pubkey, bool *was_from_db) {
 	string p = get_sanitized_nick(nick);
 
-	// First, check if a pubkey has been cached from the DB
-	{
-		AutoMutex(hMutex);
-		maintainCache();
+	AutoMutex(hMutex);
 
-		auto x = db_pubkeys.find(p);
-		if (x != db_pubkeys.end()) {
-			x->second.lastHit = time(NULL);
+	auto x = pubkeys.find(p);
+	if (x != pubkeys.end()) {
+		x->second.lastHit = time(NULL);
+		if (x->second.pubkeys.size() == 1) {
+			// only return a pubkey if only one person with that nick has been seen
 			pubkey = *x->second.pubkeys.begin();
 			if (was_from_db != NULL) {
-				*was_from_db = true;
+				*was_from_db = x->second.is_manual;
 			}
 #ifdef DEBUG
-			api->ib_printf(_("MeshCore -> Found pubkey for %s in DB cache\n"), p.c_str(), pubkey.c_str());
+			api->ib_printf(_("MeshCore -> Found pubkey for %s\n"), p.c_str(), pubkey.c_str());
 #endif
 			return true;
 		}
 	}
 
-	// Second, check if a pubkey has been saved in the DB
-	char* q = api->db->MPrintf("SELECT PubKey FROM meshcore_users WHERE Nick=%Q", p.c_str());
-	sql_rows res = GetTable(q);
-	api->db->Free(q);
-	if (res.size() > 0) {
-		pubkey = res.begin()->second["PubKey"];
-		cachePubKey(nick, pubkey);
-		if (was_from_db != NULL) {
-			*was_from_db = true;
-		}
-#ifdef DEBUG
-		api->ib_printf(_("MeshCore -> Found pubkey for %s in DB\n"), p.c_str(), pubkey.c_str());
-#endif
-		return true;
-	}
+	return false;
+}
 
-	// Third, see if it's known from the live data
-	{
-		AutoMutex(hMutex);
+bool GetNickFromPubKeyPrefix(const string& pubkey, string& nick) {
+	if (pubkey.empty()) { return false; }
 
-		auto x = live_pubkeys.find(p);
-		if (x != live_pubkeys.end()) {
-			x->second.lastHit = time(NULL);
-			if (x->second.pubkeys.size() == 1) {
-				// only return a live pubkey if only one person with that nick has been seen
-				pubkey = *x->second.pubkeys.begin();
-				if (was_from_db != NULL) {
-					*was_from_db = false;
-				}
-#ifdef DEBUG
-				api->ib_printf(_("MeshCore -> Found pubkey for %s in live data\n"), p.c_str(), pubkey.c_str());
-#endif
-				return true;
-			}
+	for (auto& x : pubkeys) {
+		if (!stricmp(pubkey.c_str(), x.second.GetPubKeyPrefix().c_str())) {
+			nick = x.first;
+			return true;
 		}
 	}
-
 	return false;
 }
 

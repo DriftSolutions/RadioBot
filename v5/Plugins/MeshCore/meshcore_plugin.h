@@ -57,14 +57,18 @@ struct MESHCORE_CONFIG {
 struct MESHCORE_REF_HANDLE {
 	bool is_channel;
 	char channel_name[64];  // hashtag name, e.g. "#Primary" (from channel_info)
-	char nick[128];
+	char pubkey[128];
 };
 
 extern MESHCORE_CONFIG meshcore_config;
 
 bool GetUserPubKey(const string& nick, string& pubkey, bool* was_from_db);
+bool GetNickFromPubKeyPrefix(const string& pubkey, string& nick);
 bool SaveUserPubKey(const string& nick, string& pubkey);
-void AddLivePubKey(const string& nick, const string& pubkey);
+void AddPubKey(const string& nick, const string& pubkey, bool is_manual);
 
 int MeshCore_UserDB_Commands(const char* command, const char* parms, USER_PRESENCE* ut, uint32 type);
-void sanitize_nick(char* nick);
+//void sanitize_nick(char* nick);
+string GetPubKeyPrefix(const string& pubkey);
+string get_sanitized_nick(const string& str);
+sql_rows GetTable(const char* query, char** errmsg = NULL);

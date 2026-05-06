@@ -74,8 +74,7 @@ void meshcore_up_unref(USER_PRESENCE * u, const char * fn, int line) {
 
 // ── USER_PRESENCE allocation ──────────────────────────────────────────────
 
-static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, const char * hostmask,
-                                                bool is_channel, const char * channel_name) {
+static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, const char* pubkey, const char * hostmask, bool is_channel, const char * channel_name) {
 	USER_PRESENCE * ret = znew(USER_PRESENCE);
 	memset(ret, 0, sizeof(USER_PRESENCE));
 
@@ -83,7 +82,9 @@ static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, c
 	memset(h, 0, sizeof(MESHCORE_REF_HANDLE));
 	h->is_channel = is_channel;
 	sstrcpy(h->channel_name, channel_name ? channel_name : "");
-	sstrcpy(h->nick, nick);
+	if (pubkey != NULL) {
+		sstrcpy(h->pubkey, pubkey);
+	}
 
 	ret->User = user;
 	ret->Nick = zstrdup(nick);
@@ -142,22 +143,24 @@ void _send_meshcore_msg_priv(MESHCORE_REF_HANDLE* h, const string& destination, 
 }
 
 bool _send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg) {
-	LockMutex(hMutex);
+	AutoMutex(hMutex);
 	bool ret = false;
 	MESHCORE_REF_HANDLE * h = (MESHCORE_REF_HANDLE *)ut->Ptr1;
 	if (meshcore_config.connected && meshcore_config.mosq) {
 		json payload;
 		string topic;
+
 		if (h->is_channel && !force_privmsg) {
-			string pk;
-			if (GetUserPubKey(h->nick, pk, NULL)) {
-				_send_meshcore_msg_priv(h, pk, topic, payload, str);
-			} else {
-				_send_meshcore_msg_chan(h, topic, payload, str);
-			}
+			_send_meshcore_msg_chan(h, topic, payload, str);
 		} else {
-			_send_meshcore_msg_priv(h, h->nick, topic, payload, str);
+			string pk = h->pubkey;
+			if (pk.empty() && !GetUserPubKey(ut->Nick, pk, NULL)) {
+				api->ib_printf(_("We have no pubkey to send a message to %s!\n"), ut->Nick);
+				return false;
+			}
+			_send_meshcore_msg_priv(h, pk, topic, payload, str);
 		}
+
 		string s = payload.dump();
 #ifdef DEBUG
 		api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
@@ -174,7 +177,6 @@ bool _send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg
 			api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
 		}
 	}
-	RelMutex(hMutex);
 	return ret;
 }
 
@@ -193,6 +195,9 @@ bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str) {
 
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
 	// send PM to the user, falling back to in-channel if they don't have a pubkey set
+	if (_send_meshcore_msg(ut, str, true)) {
+		return true;
+	}
 	return _send_meshcore_msg(ut, str, false);
 }
 
@@ -220,23 +225,6 @@ bool send_meshcore_get_contacts() {
 
 // ── incoming message handlers ─────────────────────────────────────────────
 
-void sanitize_nick(char * nick) {
-	str_replaceA(nick, strlen(nick) + 1, " ", "_");
-	str_replaceA(nick, strlen(nick) + 1, "!", "_");
-	str_replaceA(nick, strlen(nick) + 1, "@", "_");
-
-	char* p = nick;
-	while (*p) {
-		if (!isprint(*p)) {
-			memmove(p, p + 1, strlen(p));
-		} else {
-			p++;
-		}
-	}
-
-	strtrim(nick);
-}
-
 static void on_channel_msg(const char* from, const char* text, int channel_idx) {
 	if (!meshcore_config.EnableChannelMessages) { return; }
 
@@ -245,10 +233,15 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx) 
 	}
 
 	char nick[128];
-	sstrcpy(nick, from);
-	sanitize_nick(nick);
+	sstrcpy(nick, get_sanitized_nick(from).c_str());
+	string pubkey;
+	if (GetUserPubKey(nick, pubkey, NULL)) {
+		pubkey = GetPubKeyPrefix(pubkey);
+	} else {
+		pubkey = "unknown";
+	}
 
-	string hostmask = mprintf("%s!%s@channel.meshcore", nick, nick);
+	string hostmask = mprintf("%s!%s@channel.meshcore", nick, pubkey.c_str());
 	USER* user = api->user->GetUser(hostmask.c_str());
 	// translate channel index to its hashtag name
 	string chan_name;
@@ -267,11 +260,11 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx) 
 		uint32 flags = user ? user->Flags : api->user->GetDefaultFlags();
 		char flagbuf[64];
 		api->user->uflag_to_string(flags, flagbuf, sizeof(flagbuf));
-		api->ib_printf(_("MeshCore -> Channel[%d/%s] msg from %s[%s]: %s\n"), channel_idx, chan_name.c_str(), nick, flagbuf, text);
+		api->ib_printf(_("MeshCore -> Channel[%d/%s] msg from %s[%s, %s]: %s\n"), channel_idx, chan_name.c_str(), nick, hostmask.c_str(), flagbuf, text);
 	}
 #endif
 
-	USER_PRESENCE* up = alloc_meshcore_presence(user, nick, hostmask.c_str(), true, chan_name.c_str());
+	USER_PRESENCE* up = alloc_meshcore_presence(user, nick, NULL, hostmask.c_str(), true, chan_name.c_str());
 
 	IBM_USERTEXT ut;
 	ut.userpres = up;
@@ -302,23 +295,26 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx) 
 	UnrefUser(up);
 }
 
-static void on_direct_msg(const char * from, const char * text) {
+static void on_direct_msg(const char * pubkey, const char * text) {
 	if (!meshcore_config.EnableDirectMessages) { return; }
 
+	/*
 	// self_node is a human name (e.g. "Drift-2"); direct-message `from` is a pubkey_prefix hex string
 	if (meshcore_config.self_node[0] && !strcmp(from, meshcore_config.self_node)) {
 		return;
 	}
+	*/
 	// self_pubkey is the full public key; pubkey_prefix is a leading substring of it
-	if (meshcore_config.self_pubkey[0] && strncmp(from, meshcore_config.self_pubkey, strlen(from)) == 0) {
+	if (meshcore_config.self_pubkey[0] && strncmp(pubkey, meshcore_config.self_pubkey, strlen(pubkey)) == 0) {
 		return;
 	}
 
-	char nick[128];
-	sstrcpy(nick, from);
-	sanitize_nick(nick);
+	string nick;
+	if (!GetNickFromPubKeyPrefix(pubkey, nick)) {
+		nick = pubkey;
+	}
 
-	string hostmask = mprintf("%s!%s@chat.meshcore", nick, nick);
+	string hostmask = mprintf("%s!%s@chat.meshcore", nick.c_str(), pubkey);
 	USER * user = api->user->GetUser(hostmask.c_str());
 
 #ifdef DEBUG
@@ -326,20 +322,12 @@ static void on_direct_msg(const char * from, const char * text) {
 		uint32 flags = user ? user->Flags : api->user->GetDefaultFlags();
 		char flagbuf[64];
 		api->user->uflag_to_string(flags, flagbuf, sizeof(flagbuf));
-		api->ib_printf(_("MeshCore -> Direct msg from %s[%s]: %s\n"), nick, flagbuf, text);
+		api->ib_printf(_("MeshCore -> Direct msg from %s[%s, %s]: %s\n"), nick, hostmask.c_str(), flagbuf, text);
 	}
 #endif
 
-	USER_PRESENCE* up = alloc_meshcore_presence(user, nick, hostmask.c_str(), false, NULL);
-
-	IBM_USERTEXT ut;
-	ut.userpres = up;
-	ut.type = IBM_UTT_PRIVMSG;
-	ut.text = text;
-	if (api->SendMessage(-1, IB_ONTEXT, (char*)&ut, sizeof(ut))) {
-		UnrefUser(up);
-		return;
-	}
+	USER_PRESENCE* up = alloc_meshcore_presence(user, nick.c_str(), pubkey, hostmask.c_str(), false, NULL);
+	bool done = false;
 
 	if (api->commands->IsCommandPrefix(text[0]) || !meshcore_config.RequirePrefix) {
 		StrTokenizer st((char*)text, ' ');
@@ -355,12 +343,21 @@ static void on_direct_msg(const char * from, const char * text) {
 		}
 
 		COMMAND* com = api->commands->FindCommand(cmd);
+		int ret = 0;
 		if (com && com->proc_type == COMMAND_PROC && (com->mask & CM_ALLOW_CONSOLE_PRIVATE)) {
-			api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PRIVATE);
+			done = (api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PRIVATE) > 0);
 		}
 
 		if (parms) { st.FreeString(parms); }
 		st.FreeString(cmd2);
+	}
+
+	if (!done) {
+		IBM_USERTEXT ut;
+		ut.userpres = up;
+		ut.type = IBM_UTT_PRIVMSG;
+		ut.text = text;
+		api->SendMessage(-1, IB_ONTEXT, (char*)&ut, sizeof(ut));
 	}
 
 	UnrefUser(up);
@@ -422,7 +419,7 @@ void _handle_contact(const json& e) {
 		if (e["type"].get<int>() == 1) { // only learn Companion nodes
 			string pubkey = e["public_key"].get<string>();
 			string nick = e["adv_name"].get<string>();
-			AddLivePubKey(nick, pubkey);
+			AddPubKey(nick, pubkey, false);
 		}
 	}
 }
@@ -655,6 +652,13 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	}
 
 	api->db->Query("CREATE TABLE IF NOT EXISTS meshcore_users(ID INTEGER PRIMARY KEY AUTOINCREMENT, `Nick` TEXT COLLATE NOCASE UNIQUE, `PubKey` TEXT);", NULL, NULL, NULL);
+	// Second, check if a pubkey has been saved in the DB
+	sql_rows res = GetTable("SELECT * FROM meshcore_users");
+	for (auto& x : res) {
+		string nick = res.begin()->second["Nick"];
+		string pubkey = res.begin()->second["PubKey"];
+		AddPubKey(nick, pubkey, true);
+	}
 
 	COMMAND_ACL acl;
 	api->commands->FillACL(&acl, 0, UFLAG_DJ | UFLAG_HOP | UFLAG_OP | UFLAG_MASTER, 0);
