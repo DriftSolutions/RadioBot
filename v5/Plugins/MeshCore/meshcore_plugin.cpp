@@ -112,6 +112,35 @@ static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, c
 
 // ── outgoing message ──────────────────────────────────────────────────────
 
+bool send_meshcore_channel_message(int channel_idx, const char* str) {
+	AutoMutex(hMutex);
+	bool ret = false;
+	if (meshcore_config.connected && meshcore_config.mosq) {
+		json payload;
+		string topic = string(meshcore_config.topic_prefix) + "/command/send_chan_msg";
+
+		payload["channel"] = channel_idx;
+		payload["message"] = str;
+
+		string s = payload.dump();
+#ifdef DEBUG
+		api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
+#endif
+		int rc;
+		if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
+			ret = true;
+		} else {
+#ifndef WIN32
+			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
+#else
+			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
+#endif
+			api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+		}
+	}
+	return ret;
+}
+
 void _send_meshcore_msg_chan(MESHCORE_REF_HANDLE* h, string& topic, json& payload, const char* str) {
 	// reverse-lookup the channel index from the stored name
 	int send_idx = 0;
@@ -223,9 +252,31 @@ bool send_meshcore_get_contacts() {
 	return ret;
 }
 
+bool send_meshcore_get_channels() {
+	bool ret = false;
+	json payload = json::object();
+	string topic = string(meshcore_config.topic_prefix) + "/command/get_channels";
+	string s = payload.dump();
+#ifdef DEBUG
+	api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
+#endif
+	int rc;
+	if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
+		ret = true;
+	} else {
+#ifndef WIN32
+		api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
+#else
+		api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
+#endif
+		api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+	}
+	return ret;
+}
+
 // ── incoming message handlers ─────────────────────────────────────────────
 
-static void on_channel_msg(const char* from, const char* text, int channel_idx) {
+static void on_channel_msg(const char* from, const char* text, int channel_idx, int hops) {
 	if (!meshcore_config.EnableChannelMessages) { return; }
 
 	if (meshcore_config.self_node[0] && !strcmp(from, meshcore_config.self_node)) {
@@ -283,9 +334,14 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx) 
 			parms = st.GetTok(2, st.NumTok());
 		}
 
-		COMMAND* com = api->commands->FindCommand(cmd + 1);
-		if (com && com->proc_type == COMMAND_PROC && (com->mask & CM_ALLOW_CONSOLE_PUBLIC)) {
-			api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PUBLIC);
+		if (meshcore_config.Location[0] && !stricmp(cmd + 1, "ping")) {
+			if (hops == 0xFF) { hops = 0; }
+			up->send_chan_notice(up, mprintf("%s: I'm receiving you in %s from %d hops away", from, meshcore_config.Location, hops).c_str());
+		} else {
+			COMMAND* com = api->commands->FindCommand(cmd + 1);
+			if (com && com->proc_type == COMMAND_PROC && (com->mask & CM_ALLOW_CONSOLE_PUBLIC)) {
+				api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PUBLIC | CM_FLAG_SLOW);
+			}
 		}
 
 		if (parms) { st.FreeString(parms); }
@@ -322,7 +378,7 @@ static void on_direct_msg(const char * pubkey, const char * text) {
 		uint32 flags = user ? user->Flags : api->user->GetDefaultFlags();
 		char flagbuf[64];
 		api->user->uflag_to_string(flags, flagbuf, sizeof(flagbuf));
-		api->ib_printf(_("MeshCore -> Direct msg from %s[%s, %s]: %s\n"), nick, hostmask.c_str(), flagbuf, text);
+		api->ib_printf(_("MeshCore -> Direct msg from %s[%s, %s]: %s\n"), nick.c_str(), hostmask.c_str(), flagbuf, text);
 	}
 #endif
 
@@ -345,7 +401,7 @@ static void on_direct_msg(const char * pubkey, const char * text) {
 		COMMAND* com = api->commands->FindCommand(cmd);
 		int ret = 0;
 		if (com && com->proc_type == COMMAND_PROC && (com->mask & CM_ALLOW_CONSOLE_PRIVATE)) {
-			done = (api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PRIVATE) > 0);
+			done = (api->commands->ExecuteProc(com, parms, up, CM_ALLOW_CONSOLE_PRIVATE | CM_FLAG_SLOW) > 0);
 		}
 
 		if (parms) { st.FreeString(parms); }
@@ -403,6 +459,7 @@ static void on_mqtt_connect(struct mosquitto * mosq, void * userdata, int rc) {
 #endif
 */
 
+	send_meshcore_get_channels();
 	send_meshcore_get_contacts();
 }
 
@@ -430,8 +487,17 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 	string raw((const char *)msg->payload, msg->payloadlen);
 	string topic(msg->topic);
 
+	string prefix_self = string(meshcore_config.topic_prefix) + "/self_info";
+	string prefix_chan_info = string(meshcore_config.topic_prefix) + "/channel_info";
+	string prefix_chan = string(meshcore_config.topic_prefix) + "/message/channel/";
+	string prefix_dir = string(meshcore_config.topic_prefix) + "/message/direct/";
+	string prefix_contacts = string(meshcore_config.topic_prefix) + "/contacts";
+	string prefix_new_contact = string(meshcore_config.topic_prefix) + "/new_contact";
+
 #ifdef DEBUG
-	api->ib_printf("Received message on %s: %s\n", topic.c_str(), raw.c_str());
+	if (topic != prefix_contacts) {
+		api->ib_printf("Received message on %s: %s\n", topic.c_str(), raw.c_str());
+	}
 #endif
 
 	auto j = json::parse(raw, nullptr, false);
@@ -442,23 +508,23 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 	auto& payload = j["payload"];
 
 #ifdef DEBUG
-	api->ib_printf("Payload only: %s\n", payload.dump().c_str());
+	if (topic != prefix_contacts) {
+		api->ib_printf("Payload only: %s\n", payload.dump().c_str());
+	}
 #endif
 
-	string prefix_self      = string(meshcore_config.topic_prefix) + "/self_info";
-	string prefix_chan_info = string(meshcore_config.topic_prefix) + "/channel_info";
-	string prefix_chan      = string(meshcore_config.topic_prefix) + "/message/channel/";
-	string prefix_dir       = string(meshcore_config.topic_prefix) + "/message/direct/";
-	string prefix_contacts	= string(meshcore_config.topic_prefix) + "/contacts";
-	string prefix_new_contact = string(meshcore_config.topic_prefix) + "/new_contact";
-
 	if (topic == prefix_chan_info) {
-		if (payload.contains("channel_idx") && payload.contains("name") && payload["name"].is_string()) {
+		if (payload.contains("channel_idx") && payload["channel_idx"].is_number_integer() && payload.contains("channel_name") && payload["channel_name"].is_string()) {
 			int idx = payload["channel_idx"].get<int>();
-			string name = "#" + payload["name"].get<string>();
-			for (char& c : name) {
-				if (c == ' ' || c == '!' || c == '@') { c = '-'; }
+			if (idx < 0 || idx >= 40) { return; }
+			if (idx == 39) {
+				meshcore_config.lastReceivedChannels = time(NULL);
 			}
+
+			string name = get_sanitized_nick(payload["channel_name"].get<string>());
+			if (name.empty()) { return; }
+			name.insert(name.begin(), '#');
+
 			LockMutex(hMutex);
 			channel_names[idx] = name;
 			RelMutex(hMutex);
@@ -502,7 +568,8 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 		string from     = text.substr(0, sep);
 		string msg_text = text.substr(sep + 2);
 		int channel_idx = payload.value("channel_idx", 0);
-		on_channel_msg(from.c_str(), msg_text.c_str(), channel_idx);
+		int hops = (payload.contains("path_len") && payload["path_len"].is_number_integer()) ? payload.value("path_len", 0) : 0;
+		on_channel_msg(from.c_str(), msg_text.c_str(), channel_idx, hops);
 	} else if (topic.rfind(prefix_dir, 0) == 0) {
 		string from = payload.value("pubkey_prefix", "");
 		string text = payload.value("text", "");
@@ -523,6 +590,7 @@ THREADTYPE MeshCoreThread(void * lpData) {
 
 	time_t nextTry = time(NULL);
 	int64 lastReq = 0;
+	int64 lastChannelReq = 0;	
 
 	while (!meshcore_config.shutdown_now) {
 		if (meshcore_config.mosq == NULL && time(NULL) >= nextTry) {
@@ -571,12 +639,18 @@ THREADTYPE MeshCoreThread(void * lpData) {
 				mosquitto_destroy(meshcore_config.mosq);
 				meshcore_config.mosq = NULL;
 				meshcore_config.connected = false;
-				meshcore_config.lastReceivedContacts = 0;
+				meshcore_config.lastReceivedContacts = meshcore_config.lastReceivedChannels = 0;
 				RelMutex(hMutex);
 				nextTry = time(NULL) + 30;
-			} else if (time(NULL) - meshcore_config.lastReceivedContacts >= 3600 && time(NULL) - lastReq >= 60) {
-				send_meshcore_get_contacts();
-				lastReq = time(NULL);
+			} else {
+				if (time(NULL) - meshcore_config.lastReceivedContacts >= 3600 && time(NULL) - lastReq >= 60) {
+					send_meshcore_get_contacts();
+					lastReq = time(NULL);
+				}
+				if (time(NULL) - meshcore_config.lastReceivedChannels >= 3600 && time(NULL) - lastChannelReq >= 60) {
+					send_meshcore_get_channels();
+					lastChannelReq = time(NULL);
+				}				
 			}
 		} else {
 			safe_sleep(1);
@@ -635,9 +709,13 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 		meshcore_config.RequirePrefix = (api->config->GetConfigSectionLong(root, "RequirePrefix") > 0);
 		meshcore_config.EnableChannelMessages = api->config->GetConfigSectionLong(root, "EnableChannelMessages") != 0;
 		meshcore_config.EnableDirectMessages = api->config->GetConfigSectionLong(root, "EnableDirectMessages") != 0;
+		meshcore_config.SourceOnly = api->config->GetConfigSectionLong(root, "SourceOnly") > 0 ? true : false;
+		meshcore_config.SongInterval = api->config->GetConfigSectionLong(root, "SongInterval") > 0 ? api->config->GetConfigSectionLong(root, "SongInterval") : 0;
+		meshcore_config.SongIntervalSource = api->config->GetConfigSectionLong(root, "SongIntervalSource");
 
 		auto chans = api->config->GetConfigSection(root, "Channels");
 		if (chans) {
+			AutoMutex(hMutex);
 			char buf[32];
 			for (int i = 0; i < 32; i++) {
 				snprintf(buf, sizeof(buf), "%d", i);
@@ -685,6 +763,115 @@ void quit() {
 }
 
 int message(unsigned int msg, char * data, int datalen) {
+	switch (msg) {
+#if !defined(IRCBOT_LITE)
+		case IB_SS_DRAGCOMPLETE:
+			{
+				bool* b = (bool*)data;
+				int sp = api->SendMessage(-1, SOURCE_IS_PLAYING, NULL, 0);
+				int got_info = 0;
+				IBM_SONGINFO song_info;
+				memset(&song_info, 0, sizeof(song_info));
+				if (sp) {
+					got_info = api->SendMessage(-1, SOURCE_GET_SONGINFO, (char*)&song_info, sizeof(song_info));
+				}
+				AutoMutex(hMutex);
+				if (meshcore_config.connected && meshcore_config.mosq != NULL) {
+					for (auto& c : channel_names) {						 
+						if (*b == true && (!meshcore_config.SourceOnly || sp == 1)) {
+							STATS* s = api->ss->GetStreamInfo();
+							if (s->online) {
+								int si = meshcore_config.SongInterval;
+								if (sp && meshcore_config.SongIntervalSource >= 0) {
+									si = meshcore_config.SongIntervalSource;
+								}
+								if (si > 0) {
+									int64 diff = time(NULL) - meshcore_config.lastPost;
+									if (diff < (si * 60)) {
+										api->ib_printf(_("MeshCore -> Skipping post on channel %s, last tweet was " I64FMT " seconds ago...\n"), c.second.c_str(), diff);
+										continue;
+									}
+								}
+
+								char buf[1024], buf2[32], buf3[32], buf4[32], buf_artisttag[1024] = { '#', 0 };
+								if (got_info) {
+									snprintf(buf2, sizeof(buf2), "%u", song_info.file_id);
+									if (song_info.artist[0]) {
+										sstrcat(buf_artisttag, song_info.artist);
+									}
+								} else {
+									strcpy(buf2, "0");
+								}
+								if (buf_artisttag[1] == 0) {
+									sstrcat(buf_artisttag, s->cursong);
+									char* p = strchr(buf_artisttag, '-');
+									if (p != NULL) {
+										*p = 0;
+									}
+								}
+								strtrim(buf_artisttag);
+								str_replace(buf_artisttag, sizeof(buf_artisttag), " ", "");
+								str_replace(buf_artisttag, sizeof(buf_artisttag), "\t", "");
+								strlwr(buf_artisttag);
+
+								// check for a new DJ
+								if (stricmp(s->curdj, s->lastdj)) {
+									buf[0] = 0;
+									bool loaded = false;
+									if (s->lastdj[0]) {
+										snprintf(buf3, sizeof(buf3), "MeshCoreDJChange_%s", c.second.c_str());
+										loaded = api->LoadMessage(buf3, buf, sizeof(buf)) ? true : api->LoadMessage("MeshCoreDJChange", buf, sizeof(buf));
+									} else {
+										snprintf(buf3, sizeof(buf3), "MeshCoreDJNew_%s", c.second.c_str());
+										loaded = api->LoadMessage(buf3, buf, sizeof(buf)) ? true : api->LoadMessage("MeshCoreDJNew", buf, sizeof(buf));
+									}
+									if (loaded) {
+										api->ProcText(buf, sizeof(buf));
+										send_meshcore_channel_message(c.first, buf);
+									}
+								}
+
+								snprintf(buf3, sizeof(buf3), "MeshCoreSong_%s", c.second.c_str());
+								snprintf(buf4, sizeof(buf4), "MeshCoreSongSource_%s", c.second.c_str());
+								if ((sp == 1 && (api->LoadMessage(buf4, buf, sizeof(buf)) || api->LoadMessage("MeshCoreSongSource", buf, sizeof(buf)))) || api->LoadMessage(buf3, buf, sizeof(buf)) || api->LoadMessage("MeshCoreSong", buf, sizeof(buf))) {
+									api->ProcText(buf, sizeof(buf));
+									str_replace(buf, sizeof(buf), "%artisttag%", buf_artisttag);
+									str_replace(buf, sizeof(buf), "%songid%", buf2);
+									if (got_info && song_info.is_request) {
+										strlcat(buf, " #requested", sizeof(buf));
+									}
+									send_meshcore_channel_message(c.first, buf);
+									meshcore_config.lastPost = time(NULL);
+								}
+
+								snprintf(buf3, sizeof(buf3), "MeshCoreRequest_%s", c.second.c_str());
+								if (got_info && song_info.is_request && song_info.requested_by[0] && (api->LoadMessage(buf3, buf, sizeof(buf)) || api->LoadMessage("MeshCoreRequest", buf, sizeof(buf)))) {
+									str_replace(buf, sizeof(buf), "%requestedby%", song_info.requested_by);
+									api->ProcText(buf, sizeof(buf));
+									send_meshcore_channel_message(c.first, buf);
+									meshcore_config.lastPost = time(NULL);
+								}
+							}
+						}
+					}
+				}				
+			}
+			break;
+#endif
+
+		case IB_BROADCAST_MSG:
+			{
+				if (api->irc == NULL || api->irc->GetDoSpam()) {
+					IBM_USERTEXT* ibm = (IBM_USERTEXT*)data;
+					AutoMutex(hMutex);
+					for (auto& c : channel_names) {
+						send_meshcore_channel_message(c.first, ibm->text);
+						//PostTweet(i, ibm->text);
+					}
+				}
+			}
+			break;
+	}
 	return 0;
 }
 

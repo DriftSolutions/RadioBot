@@ -1489,7 +1489,6 @@ THREADTYPE ircThread(VOID *lpData) {
 							bSend(config.ircnets[netno].sock,buf2,strlen(buf2), PRIORITY_INTERACTIVE);
 						}
 
-
 						bool dobreak = false;
 						for (int pln=0; pln < MAX_PLUGINS; pln++) {
 							if (config.plugins[pln].hHandle && config.plugins[pln].plug) {

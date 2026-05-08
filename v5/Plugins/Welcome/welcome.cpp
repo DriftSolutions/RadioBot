@@ -482,7 +482,9 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 	if (wel_config.RegKey[0]) { api->commands->RegisterCommand_Proc(pluginnum, "wordnik",		&acl, CM_ALLOW_ALL, Welcome_Commands, _("This will look up definitions for a word on Wordnik.com")); }
 	if (wel_config.BingAccountKey[0]) { api->commands->RegisterCommand_Proc(pluginnum, "bing",		&acl, CM_ALLOW_ALL, Welcome_Commands, _("This will search the web for the term you specified")); }
 	api->commands->RegisterCommand_Proc(pluginnum, "spinbottle",	&acl, CM_ALLOW_IRC_PUBLIC, Welcome_Commands, _("Play spin the bottle"));
-	api->commands->RegisterCommand_Proc(pluginnum, "ping",			&acl, CM_ALLOW_IRC_PUBLIC|CM_ALLOW_IRC_PRIVATE, Welcome_Commands, _("This will show you the lag between the bot and yourself or another user"));
+	if (api->irc) {
+		api->commands->RegisterCommand_Proc(pluginnum, "ping", &acl, CM_ALLOW_IRC_PUBLIC | CM_ALLOW_IRC_PRIVATE, Welcome_Commands, _("This will show you the lag between the bot and yourself or another user"));
+	}
 
 	api->commands->FillACL(&acl, 0, UFLAG_DJ, 0);
 	if (wel_config.WeatherKey[0]) { api->commands->RegisterCommand_Proc(pluginnum, "weather_public", &acl, CM_ALLOW_ALL_PUBLIC, Welcome_Commands, _("A function that will show the channel weather information")); }

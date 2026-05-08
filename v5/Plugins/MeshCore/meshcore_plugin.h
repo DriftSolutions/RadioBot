@@ -38,9 +38,13 @@ extern DSL_Mutex hMutex;
 
 struct MESHCORE_CONFIG {
 	bool shutdown_now;
+
 	bool RequirePrefix;
 	bool EnableChannelMessages;
 	bool EnableDirectMessages;
+	bool SourceOnly;
+	int SongInterval, SongIntervalSource;
+	char Location[128];
 
 	char host[128];
 	int port;
@@ -50,8 +54,11 @@ struct MESHCORE_CONFIG {
 	char self_node[128];
 	char self_pubkey[65];
 	bool connected;
-	int64 lastReceivedContacts;
 	struct mosquitto * mosq;
+
+	int64 lastReceivedContacts;
+	int64 lastReceivedChannels;
+	int64 lastPost;
 };
 
 struct MESHCORE_REF_HANDLE {
