@@ -112,30 +112,97 @@ static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, c
 
 // ── outgoing message ──────────────────────────────────────────────────────
 
+
+void _get_split_into_lines(const char* str, vector<string>& lines, size_t len) {
+	vector<char*> words;
+	char* tmp = strdup(str);
+	strtrim(tmp);
+	char* p2 = NULL;
+	char* p = strtok_r(tmp, " \t", &p2);
+	while (p != NULL) {
+		if (p[0]) {
+			words.push_back(p);
+		}
+		p = strtok_r(NULL, " \t", &p2);
+	}
+
+	string line;
+	for (size_t i = 0; i < words.size(); i++) {
+		if (line.empty()) {
+			line = words[i];
+		} else {
+			if (line.length() + 1 + strlen(words[i]) > len) {
+				lines.push_back(line);
+				line = words[i];
+			} else {
+				line += " ";
+				line += words[i];
+			}
+		}
+	}
+	if (!line.empty()) {
+		lines.push_back(line);
+	}
+
+	free(tmp);
+}
+
+void split_msg_for_privmsg(const char* str, vector<string>& lines) {
+	_get_split_into_lines(str, lines, 133);
+}
+
+void split_msg_for_chan(const char* str, vector<string>& lines) {
+	size_t len = 133;
+	hMutex.Lock();
+	if (meshcore_config.self_node[0] && strlen(meshcore_config.self_node) < 64) {
+		len -= (strlen(meshcore_config.self_node) + 2);
+	} else if (api->irc) {
+		// use the bot's IRC nick as a fallback
+		const char* p = api->irc->GetDefaultNick(-1);
+		if (p[0] && strlen(p) < 64) {
+			len -= (strlen(p) + 2);
+		} else {
+			// use a default of 16 if we don't know the bot's name
+			len -= 16;
+		}
+	} else {
+		// use a default of 16 if we don't know the bot's name
+		len -= 16;
+	}
+	hMutex.Release();
+	_get_split_into_lines(str, lines, len);
+}
+
 bool send_meshcore_channel_message(int channel_idx, const char* str) {
 	AutoMutex(hMutex);
 	bool ret = false;
 	if (meshcore_config.connected && meshcore_config.mosq) {
-		json payload;
 		string topic = string(meshcore_config.topic_prefix) + "/command/send_chan_msg";
 
-		payload["channel"] = channel_idx;
-		payload["message"] = str;
+		vector<string> lines;
+		split_msg_for_chan(str, lines);
 
-		string s = payload.dump();
+		for (auto& line : lines) {
+
+			json payload;
+			payload["channel"] = channel_idx;
+			payload["message"] = line;
+
+			string s = payload.dump();
 #ifdef DEBUG
-		api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
+			api->ib_printf("Sending payload to %s: %s\n", topic.c_str(), s.c_str());
 #endif
-		int rc;
-		if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
-			ret = true;
-		} else {
+			int rc;
+			if ((rc = mosquitto_publish(meshcore_config.mosq, NULL, topic.c_str(), (int)s.size(), s.c_str(), 0, false)) == MOSQ_ERR_SUCCESS) {
+				ret = true;
+			} else {
 #ifndef WIN32
-			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
+				api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d: %s\n"), meshcore_config.host, meshcore_config.port, mosquitto_strerror(rc));
 #else
-			api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
+				api->ib_printf(_("MeshCore -> Error sending message to broker %s:%d!\n"), meshcore_config.host, meshcore_config.port);
 #endif
-			api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+				api->ib_printf("Payload was to %s: %s\n", topic.c_str(), s.c_str());
+			}
 		}
 	}
 	return ret;
@@ -305,7 +372,6 @@ static void on_channel_msg(const char* from, const char* text, int channel_idx, 
 	}
 	RelMutex(hMutex);
 
-
 #ifdef DEBUG
 	{
 		uint32 flags = user ? user->Flags : api->user->GetDefaultFlags();
@@ -458,9 +524,6 @@ static void on_mqtt_connect(struct mosquitto * mosq, void * userdata, int rc) {
 	mosquitto_subscribe(mosq, NULL, topic, 0);
 #endif
 */
-
-	send_meshcore_get_channels();
-	send_meshcore_get_contacts();
 }
 
 static void on_mqtt_disconnect(struct mosquitto * mosq, void * userdata, int rc) {
@@ -610,6 +673,8 @@ THREADTYPE MeshCoreThread(void * lpData) {
 					mosquitto_username_pw_set(mosq, meshcore_config.username, meshcore_config.password[0] ? meshcore_config.password : NULL);
 				}
 
+				meshcore_config.lastReceivedContacts = meshcore_config.lastReceivedChannels = lastReq = lastChannelReq = 0;
+
 				int rc = mosquitto_connect(mosq, meshcore_config.host, meshcore_config.port, 60);
 				if (rc != MOSQ_ERR_SUCCESS) {
 #ifndef WIN32
@@ -638,8 +703,7 @@ THREADTYPE MeshCoreThread(void * lpData) {
 				LockMutex(hMutex);
 				mosquitto_destroy(meshcore_config.mosq);
 				meshcore_config.mosq = NULL;
-				meshcore_config.connected = false;
-				meshcore_config.lastReceivedContacts = meshcore_config.lastReceivedChannels = 0;
+				meshcore_config.connected = false;				
 				RelMutex(hMutex);
 				nextTry = time(NULL) + 30;
 			} else {
@@ -705,6 +769,9 @@ int init(int num, BOTAPI_DEF * BotAPI) {
 
 		p = api->config->GetConfigSectionValue(root, "TopicPrefix");
 		if (p && *p) { sstrcpy(meshcore_config.topic_prefix, p); }
+
+		p = api->config->GetConfigSectionValue(root, "Location");
+		if (p && *p) { sstrcpy(meshcore_config.Location, p); }
 
 		meshcore_config.RequirePrefix = (api->config->GetConfigSectionLong(root, "RequirePrefix") > 0);
 		meshcore_config.EnableChannelMessages = api->config->GetConfigSectionLong(root, "EnableChannelMessages") != 0;
