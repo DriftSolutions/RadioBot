@@ -32,10 +32,14 @@ MESHCORE_CONFIG meshcore_config;
 static map<int, string> channel_names;
 
 static char meshcore_desc[] = "MeshCore";
+#define NOTICE_PREFIX u8"˃"
+#define NOTICE_PREFIX_LEN 2
 
 // forward declaration — defined after alloc_meshcore_presence
 bool send_meshcore_channel(USER_PRESENCE* ut, const char* str);
+bool send_meshcore_channel_notice(USER_PRESENCE* ut, const char* str);
 bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str);
+bool send_meshcore_notice(USER_PRESENCE* ut, const char* str);
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str);
 bool send_meshcore_get_contacts();
 
@@ -96,10 +100,10 @@ static USER_PRESENCE * alloc_meshcore_presence(USER * user, const char * nick, c
 	}
 	ret->Ptr1 = h;
 
-	ret->send_chan_notice = send_meshcore_channel;
+	ret->send_chan_notice = send_meshcore_channel_notice;
 	ret->send_chan        = send_meshcore_channel;
 	ret->send_msg         = send_meshcore_privmsg;
-	ret->send_notice      = send_meshcore_privmsg;
+	ret->send_notice      = send_meshcore_notice;
 	ret->std_reply        = send_meshcore_std_reply;
 	ret->Desc = meshcore_desc;
 
@@ -284,17 +288,45 @@ bool send_meshcore_channel(USER_PRESENCE* ut, const char* str) {
 	return false;
 }
 
+bool send_meshcore_channel_notice(USER_PRESENCE* ut, const char* str) {
+	// send to channel if it was said in a channel, otherwise send nothing
+	if (ut->Channel != NULL) {
+		size_t buflen = strlen(str) + NOTICE_PREFIX_LEN + 1;
+		char* tmp = (char *)malloc(buflen);
+		memcpy(tmp, NOTICE_PREFIX, NOTICE_PREFIX_LEN);
+		strlcpy(tmp + 2, str, buflen - NOTICE_PREFIX_LEN);
+		bool ret = _send_meshcore_msg(ut, tmp, false);
+		free(tmp);
+		return ret;
+	}
+	return false;
+}
+
 bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str) {
 	// send PM to the user, even if they said something in-channel
 	return _send_meshcore_msg(ut, str, true);
 }
 
+bool send_meshcore_notice(USER_PRESENCE* ut, const char* str) {
+	size_t buflen = strlen(str) + NOTICE_PREFIX_LEN + 1;
+	char* tmp = (char*)malloc(buflen);
+	memcpy(tmp, NOTICE_PREFIX, NOTICE_PREFIX_LEN);
+	strlcpy(tmp + 2, str, buflen - NOTICE_PREFIX_LEN);
+	bool ret = _send_meshcore_msg(ut, tmp, true);
+	free(tmp);
+	return ret;
+}
+
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
-	// send PM to the user, falling back to in-channel if they don't have a pubkey set
-	if (_send_meshcore_msg(ut, str, true)) {
-		return true;
+	if (ut->Channel) {
+		// send NOTICE to the user, falling back to in-channel if they don't have a pubkey set
+		if (send_meshcore_notice(ut, str)) {
+			return true;
+		}
+		return send_meshcore_channel_notice(ut, str);
 	}
-	return _send_meshcore_msg(ut, str, false);
+
+	return _send_meshcore_msg(ut, str, true);
 }
 
 bool send_meshcore_get_contacts() {

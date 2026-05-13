@@ -25,6 +25,7 @@
 #define MEMLEAK
 #endif
 #include "../../src/plugins.h"
+
 #define LIBMOSQUITTO_STATIC
 //extern "C" {
 #include <mosquitto.h>

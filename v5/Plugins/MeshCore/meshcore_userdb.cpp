@@ -220,6 +220,7 @@ bool GetNickFromPubKeyPrefix(const string& pubkey, string& nick) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
