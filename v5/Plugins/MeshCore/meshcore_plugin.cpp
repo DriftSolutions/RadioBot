@@ -608,7 +608,7 @@ static void on_mqtt_message(struct mosquitto * mosq, void * userdata, const stru
 	}
 #endif
 
-	if (topic == prefix_chan_info) {
+	if (topic.rfind(prefix_chan_info, 0) == 0) {
 		if (payload.contains("channel_idx") && payload["channel_idx"].is_number_integer() && payload.contains("channel_name") && payload["channel_name"].is_string()) {
 			int idx = payload["channel_idx"].get<int>();
 			if (idx < 0 || idx >= 40) { return; }
