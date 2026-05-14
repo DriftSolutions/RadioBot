@@ -11,10 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue.cpp" />
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_get.cpp" />
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_read.cpp" />
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_write.cpp" />
+    <ClCompile Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.cpp" />
     <ClCompile Include="meshcore_plugin.cpp" />
     <ClCompile Include="meshcore_userdb.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="driftmeshcore\deps\univalue\lib\univalue_escapes.h" />
+    <ClInclude Include="driftmeshcore\deps\univalue\lib\univalue_utffilter.h" />
+    <ClInclude Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="meshcore_plugin.h" />
   </ItemGroup>
@@ -77,6 +85,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>.\driftmeshcore\deps\univalue\include</AdditionalIncludeDirectories>
       <!-- If using vcpkg: vcpkg integrate install handles include paths automatically. -->
       <!-- If using manual Mosquitto install, set MOSQUITTO_DIR environment variable   -->
       <!-- and uncomment: <AdditionalIncludeDirectories>$(MOSQUITTO_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories> -->
@@ -106,6 +115,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>.\driftmeshcore\deps\univalue\include</AdditionalIncludeDirectories>
       <!-- If using vcpkg: vcpkg integrate install handles include paths automatically. -->
       <!-- If using manual Mosquitto install, set MOSQUITTO_DIR environment variable   -->
       <!-- and uncomment: <AdditionalIncludeDirectories>$(MOSQUITTO_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories> -->

@@ -26,16 +26,29 @@
 #endif
 #include "../../src/plugins.h"
 
-#define LIBMOSQUITTO_STATIC
-//extern "C" {
-#include <mosquitto.h>
-//}
-#include <map>
-#include <string>
+#include "driftmeshcore/libmeshcoremqttclient/meshcoremqttclient.h"
 
 extern BOTAPI_DEF * api;
 extern int pluginnum;
 extern DSL_Mutex hMutex;
+
+class MQTT_IRC_Client : public MeshCore_MQTT_Client {
+public:
+	MQTT_IRC_Client(const string& phost, uint16 pport, const string& pusername, const string& ppasspord, const string& ptopic_prefix) : MeshCore_MQTT_Client(phost, pport, pusername, ppasspord, ptopic_prefix) {}
+
+	/*
+	void printLog(const string& str); // the default implementation is puts()
+	void onSend(const string& topic, const string& payload);
+	void onRecv(const string& topic, const char* payload, int payloadlen);
+	*/
+	void onContact(const string& adv_name, const string& pubkey, int type, int hops, const UniValue& payload);
+	void onContactsComplete(const UniValue& payload);
+	void onSelfInfo(const string& adv_name, const string& pubkey, const UniValue& payload);
+	void onChanInfo(int channel_idx, const string& channelName, bool is_private, const UniValue& payload);
+	//void onChanInfoComplete();
+	void onChannelMessage(int channel_idx, const string& from, const string& text, int txt_type, int hops, const UniValue& payload);
+	void onDirectMessage(const string& pubkey_prefix, const string& text, int txt_type, int hops, const UniValue& payload);
+};
 
 struct MESHCORE_CONFIG {
 	bool shutdown_now;
@@ -52,10 +65,10 @@ struct MESHCORE_CONFIG {
 	char username[128];
 	char password[128];
 	char topic_prefix[64];
-	char self_node[128];
-	char self_pubkey[65];
-	bool connected;
-	struct mosquitto * mosq;
+	char self_node[MESHCORE_MAX_NICK_LEN+1];
+	char self_pubkey[MESHCORE_PUBKEY_LEN+1];
+	
+	MQTT_IRC_Client* client;
 
 	int64 lastReceivedContacts;
 	int64 lastReceivedChannels;

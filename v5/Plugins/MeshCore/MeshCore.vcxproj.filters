@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="univalue">
+      <UniqueIdentifier>{4582ea3b-5cb1-444e-8567-d19547388482}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="meshcore_plugin.cpp">
@@ -17,6 +20,21 @@
     <ClCompile Include="meshcore_userdb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue.cpp">
+      <Filter>univalue</Filter>
+    </ClCompile>
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_get.cpp">
+      <Filter>univalue</Filter>
+    </ClCompile>
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_read.cpp">
+      <Filter>univalue</Filter>
+    </ClCompile>
+    <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_write.cpp">
+      <Filter>univalue</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="meshcore_plugin.h">
@@ -24,6 +42,15 @@
     </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="driftmeshcore\deps\univalue\lib\univalue_escapes.h">
+      <Filter>univalue</Filter>
+    </ClInclude>
+    <ClInclude Include="driftmeshcore\deps\univalue\lib\univalue_utffilter.h">
+      <Filter>univalue</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
