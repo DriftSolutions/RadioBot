@@ -207,33 +207,35 @@ bool send_meshcore_channel_message(const string& channel_name, const char* str, 
 		size_t plen = strlen(fallback_prefix);
 		if (strncmp(channel_name.c_str(), fallback_prefix, plen) == 0) {
 			send_idx = atoi(channel_name.c_str() + plen);
+		} else {
+			api->ib_printf(_("MeshCore -> Unknown channel index for %s\n"), channel_name.c_str());
+			return false;
 		}
 	}
 	return send_meshcore_channel_message(send_idx, str, txt_type);
 }
 
-bool _send_meshcore_msg(USER_PRESENCE * ut, const char * str, bool force_privmsg, int txt_type = 0) {
+bool send_meshcore_direct_message(USER_PRESENCE* ut, const char* str, int txt_type = 0) {
 	AutoMutex(hMutex);
-	MESHCORE_REF_HANDLE * h = (MESHCORE_REF_HANDLE *)ut->Ptr1;
-	if (meshcore_config.client && meshcore_config.client->connected) {
-		if (h->is_channel && !force_privmsg) {
-			return send_meshcore_channel_message(h->channel_name, str, txt_type);
-		} else {
-			string pk = h->pubkey;
-			if (pk.empty() && !GetUserPubKey(ut->Nick, pk, NULL)) {
-				api->ib_printf(_("We have no pubkey to send a message to %s!\n"), ut->Nick);
-				return false;
-			}
-			return meshcore_config.client->SendDirectMsg(pk, str, txt_type);
-		}
+	if (meshcore_config.client == NULL || !meshcore_config.client->connected) {
+		return false;
 	}
-	return false;
+
+	MESHCORE_REF_HANDLE* h = (MESHCORE_REF_HANDLE*)ut->Ptr1;
+
+	string pk = h->pubkey;
+	if (pk.empty() && !GetUserPubKey(ut->Nick, pk, NULL)) {
+		api->ib_printf(_("We have no pubkey to send a message to %s!\n"), ut->Nick);
+		return false;
+	}
+
+	return meshcore_config.client->SendDirectMsg(pk, str, txt_type);
 }
 
 bool send_meshcore_channel(USER_PRESENCE* ut, const char* str) {
 	// send to channel if it was said in a channel, otherwise send nothing
 	if (ut->Channel != NULL) {
-		return _send_meshcore_msg(ut, str, false);
+		return send_meshcore_channel_message(ut->Channel, str);
 	}
 	return false;
 }
@@ -241,30 +243,31 @@ bool send_meshcore_channel(USER_PRESENCE* ut, const char* str) {
 bool send_meshcore_channel_notice(USER_PRESENCE* ut, const char* str) {
 	// send to channel if it was said in a channel, otherwise send nothing
 	if (ut->Channel != NULL) {
-		return _send_meshcore_msg(ut, str, false, 3);
+		return send_meshcore_channel_message(ut->Channel, str, 3);
 	}
 	return false;
 }
 
 bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str) {
+	MESHCORE_REF_HANDLE* h = (MESHCORE_REF_HANDLE*)ut->Ptr1;
 	// send PM to the user, even if they said something in-channel
-	return _send_meshcore_msg(ut, str, true);
+	return send_meshcore_direct_message(ut, str);
 }
 
 bool send_meshcore_notice(USER_PRESENCE* ut, const char* str) {
-	return _send_meshcore_msg(ut, str, true, 3);
+	return send_meshcore_direct_message(ut, str, 3);
 }
 
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
 	if (ut->Channel) {
 		// send NOTICE to the user, falling back to in-channel if they don't have a pubkey set
-		if (send_meshcore_notice(ut, str)) {
+		if (send_meshcore_direct_message(ut, str, 3)) {
 			return true;
 		}
 		return send_meshcore_channel_notice(ut, str);
 	}
 
-	return _send_meshcore_msg(ut, str, true);
+	return send_meshcore_direct_message(ut, str);
 }
 
 bool send_meshcore_get_contacts() {
