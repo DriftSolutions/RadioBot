@@ -36,14 +36,13 @@ map<string, MESHCORE_USER_PUBKEY, ci_less> pubkeys;
 string get_sanitized_nick(const string& str) {
 	char* nick = strdup(str.c_str());
 
-	str_replaceA(nick, strlen(nick) + 1, " ", "_");
-	str_replaceA(nick, strlen(nick) + 1, "!", "_");
-	str_replaceA(nick, strlen(nick) + 1, "@", "_");
-
 	char* p = nick;
 	while (*p) {
-		if (!isprint(*p)) {
-			memmove(p, p + 1, strlen(p));
+		if (*p == '-' && nick != p && *(p + 1) != 0) {
+			//allow -, but not as the first or last digit
+			p++;
+		} else if (!isalnum((unsigned char)*p)) {
+			*p++ = '_';
 		} else {
 			p++;
 		}
@@ -79,7 +78,7 @@ void AddPubKey(const string& nick, const string& pubkey, bool is_manual) {
 		} else {
 			x->second.pubkeys.insert(pubkey);
 #ifdef DEBUG
-			api->ib_printf(_("MeshCore -> Updated pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
+			//api->ib_printf(_("MeshCore -> Updated pubkey for %s (%s): %s\n"), nick.c_str(), p.c_str(), pubkey.c_str());
 #endif
 			if (x->second.pubkeys.size() > 1) {
 				api->ib_printf(_("MeshCore -> WARNING: Nick %s (%s) has more than one pubkey so they may be spoofing!\n"), nick.c_str(), p.c_str());

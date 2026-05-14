@@ -192,10 +192,13 @@ bool send_meshcore_channel_message(const string& channel_name, const char* str, 
 		return false;
 	}
 
+	api->ib_printf("MeshCore -> Trying to send to %s\n", channel_name.c_str());
+
 	int send_idx = 0;
 	bool found = false;
 	for (const auto& kv : channel_names) {
 		if (!stricmp(kv.second.c_str(), channel_name.c_str())) {
+			api->ib_printf("MeshCore -> Found %s -> %d\n", channel_name.c_str(), kv.first);
 			send_idx = kv.first;
 			found = true;
 			break;
@@ -207,6 +210,7 @@ bool send_meshcore_channel_message(const string& channel_name, const char* str, 
 		size_t plen = strlen(fallback_prefix);
 		if (strncmp(channel_name.c_str(), fallback_prefix, plen) == 0) {
 			send_idx = atoi(channel_name.c_str() + plen);
+			api->ib_printf("MeshCore -> Got channel index %s from %s\n", send_idx, channel_name.c_str());
 		} else {
 			api->ib_printf(_("MeshCore -> Unknown channel index for %s\n"), channel_name.c_str());
 			return false;
@@ -433,12 +437,14 @@ static void on_direct_msg(const char * pubkey, const char * text) {
 void MQTT_IRC_Client::onChanInfo(int channel_idx, const string& channelName, bool is_private, const UniValue& payload) {
 	string name = get_sanitized_nick(channelName);
 	if (name.empty()) { return; }
-	name.insert(name.begin(), '#');
+	if (name[0] != '#') {
+		name.insert(name.begin(), '#');
+	}
 
 	LockMutex(hMutex);
 	channel_names[channel_idx] = name;
 	RelMutex(hMutex);
-	api->ib_printf(_("MeshCore -> Channel %d name: %s\n"), channel_idx, channelName.c_str());
+	api->ib_printf(_("MeshCore -> Channel %d name: %s -> %s\n"), channel_idx, channelName.c_str(), name.c_str());
 }
 
 void MQTT_IRC_Client::onContact(const string& nick, const string& pubkey, int type, int hops, const UniValue& payload) {
