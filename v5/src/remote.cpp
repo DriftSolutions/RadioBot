@@ -55,7 +55,7 @@ struct REMOTE_FIND {
 	find_finish_type find_finish;
 	FIND_RESULTS * res;
 };
-typedef std::map<uint32, REMOTE_FIND> remoteFindList;
+typedef map<uint32, REMOTE_FIND> remoteFindList;
 remoteFindList remoteFinds;
 
 void remote_req_find_free(FIND_RESULTS * res) {

@@ -463,7 +463,6 @@ THREADTYPE scThread(VOID *lpData) {
 		//SendMessage(-1,IB_SS_DRAGCOMPLETE,(char *)&do_song,sizeof(do_song));
 		SendMessage(-1,IB_SS_DRAGCOMPLETE,(char *)&config.stats.title_changed,sizeof(config.stats.title_changed));
 
-
 		ib_printf(_("SS Scraper -> Info Update Complete, Next Update in %d Seconds\n\n"),config.base.updinterval);
 		for (int s_ind=0; s_ind < config.base.updinterval && !config.shutdown_now; s_ind++) {
 			safe_sleep(1);

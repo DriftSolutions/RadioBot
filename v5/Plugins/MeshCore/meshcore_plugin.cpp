@@ -177,7 +177,7 @@ void split_msg_for_chan(const char* str, vector<string>& lines) {
 }
 */
 
-bool send_meshcore_channel_message(int channel_idx, const char* str, int txt_type = 0) {
+bool send_meshcore_channel_message(int channel_idx, const char* str, MESHCORE_TEXT_TYPES txt_type = TXT_TYPE_PLAIN) {
 	AutoMutex(hMutex);
 	if (meshcore_config.client == NULL || !meshcore_config.client->connected) {
 		return false;
@@ -186,7 +186,7 @@ bool send_meshcore_channel_message(int channel_idx, const char* str, int txt_typ
 	return meshcore_config.client->SendChannelMsg(channel_idx, str, txt_type);
 }
 
-bool send_meshcore_channel_message(const string& channel_name, const char* str, int txt_type = 0) {
+bool send_meshcore_channel_message(const string& channel_name, const char* str, MESHCORE_TEXT_TYPES txt_type = TXT_TYPE_PLAIN) {
 	AutoMutex(hMutex);
 	if (meshcore_config.client == NULL || !meshcore_config.client->connected) {
 		return false;
@@ -210,7 +210,7 @@ bool send_meshcore_channel_message(const string& channel_name, const char* str, 
 		size_t plen = strlen(fallback_prefix);
 		if (strncmp(channel_name.c_str(), fallback_prefix, plen) == 0) {
 			send_idx = atoi(channel_name.c_str() + plen);
-			api->ib_printf("MeshCore -> Got channel index %s from %s\n", send_idx, channel_name.c_str());
+			api->ib_printf("MeshCore -> Got channel index %d from %s\n", send_idx, channel_name.c_str());
 		} else {
 			api->ib_printf(_("MeshCore -> Unknown channel index for %s\n"), channel_name.c_str());
 			return false;
@@ -219,7 +219,7 @@ bool send_meshcore_channel_message(const string& channel_name, const char* str, 
 	return send_meshcore_channel_message(send_idx, str, txt_type);
 }
 
-bool send_meshcore_direct_message(USER_PRESENCE* ut, const char* str, int txt_type = 0) {
+bool send_meshcore_direct_message(USER_PRESENCE* ut, const char* str, MESHCORE_TEXT_TYPES txt_type = TXT_TYPE_PLAIN) {
 	AutoMutex(hMutex);
 	if (meshcore_config.client == NULL || !meshcore_config.client->connected) {
 		return false;
@@ -247,7 +247,7 @@ bool send_meshcore_channel(USER_PRESENCE* ut, const char* str) {
 bool send_meshcore_channel_notice(USER_PRESENCE* ut, const char* str) {
 	// send to channel if it was said in a channel, otherwise send nothing
 	if (ut->Channel != NULL) {
-		return send_meshcore_channel_message(ut->Channel, str, 3);
+		return send_meshcore_channel_message(ut->Channel, str, TXT_TYPE_NOTICE);
 	}
 	return false;
 }
@@ -259,13 +259,13 @@ bool send_meshcore_privmsg(USER_PRESENCE* ut, const char* str) {
 }
 
 bool send_meshcore_notice(USER_PRESENCE* ut, const char* str) {
-	return send_meshcore_direct_message(ut, str, 3);
+	return send_meshcore_direct_message(ut, str, TXT_TYPE_NOTICE);
 }
 
 bool send_meshcore_std_reply(USER_PRESENCE* ut, const char* str) {
 	if (ut->Channel) {
 		// send NOTICE to the user, falling back to in-channel if they don't have a pubkey set
-		if (send_meshcore_direct_message(ut, str, 3)) {
+		if (send_meshcore_direct_message(ut, str, TXT_TYPE_NOTICE)) {
 			return true;
 		}
 		return send_meshcore_channel_notice(ut, str);
@@ -474,15 +474,17 @@ void MQTT_IRC_Client::onSelfInfo(const string& nick, const string& pubkey, const
 	return;
 }
 
-void MQTT_IRC_Client::onChannelMessage(int channel_idx, const string& from, const string& text, int txt_type, int hops, const UniValue& payload) {
+void MQTT_IRC_Client::onChannelMessage(int channel_idx, const string& from, const string& text, MESHCORE_TEXT_TYPES txt_type, int hops, const UniValue& payload) {
 	if (txt_type == 3) {
 		return;
 	}
 
+	api->ib_printf("onChannelMessage(): %d\n", channel_idx);
+
 	on_channel_msg(from.c_str(), text.c_str(), channel_idx, hops);
 }
 
-void MQTT_IRC_Client::onDirectMessage(const string& pubkey_prefix, const string& text, int txt_type, int hops, const UniValue& payload) {
+void MQTT_IRC_Client::onDirectMessage(const string& pubkey_prefix, const string& text, MESHCORE_TEXT_TYPES txt_type, int hops, const UniValue& payload) {
 	on_direct_msg(pubkey_prefix.c_str(), text.c_str());
 }
 

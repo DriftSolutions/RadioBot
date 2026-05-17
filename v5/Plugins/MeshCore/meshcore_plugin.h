@@ -46,8 +46,8 @@ public:
 	void onSelfInfo(const string& adv_name, const string& pubkey, const UniValue& payload);
 	void onChanInfo(int channel_idx, const string& channelName, bool is_private, const UniValue& payload);
 	//void onChanInfoComplete();
-	void onChannelMessage(int channel_idx, const string& from, const string& text, int txt_type, int hops, const UniValue& payload);
-	void onDirectMessage(const string& pubkey_prefix, const string& text, int txt_type, int hops, const UniValue& payload);
+	void onChannelMessage(int channel_idx, const string& from, const string& text, MESHCORE_TEXT_TYPES txt_type, int hops, const UniValue& payload);
+	void onDirectMessage(const string& pubkey_prefix, const string& text, MESHCORE_TEXT_TYPES txt_type, int hops, const UniValue& payload);
 };
 
 struct MESHCORE_CONFIG {
