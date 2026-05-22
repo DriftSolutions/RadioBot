@@ -493,25 +493,10 @@ void MQTT_IRC_Client::onDirectMessage(const string& pubkey_prefix, const string&
 THREADTYPE MeshCoreThread(void * lpData) {
 	TT_THREAD_START
 
-	time_t nextTry = time(NULL);
-	//int64 lastReq = 0;
-	//int64 lastChannelReq = 0;	
-
 	while (!meshcore_config.shutdown_now) {
-		meshcore_config.client->Work();
+		meshcore_config.client->Work(1000);
 
-		if (meshcore_config.client->connected) {
-			/*
-			if (time(NULL) - meshcore_config.lastReceivedContacts >= 3600 && time(NULL) - lastReq >= 60) {
-				send_meshcore_get_contacts();
-				lastReq = time(NULL);
-			}
-			if (time(NULL) - meshcore_config.lastReceivedChannels >= 3600 && time(NULL) - lastChannelReq >= 60) {
-				send_meshcore_get_channels();
-				lastChannelReq = time(NULL);
-			}
-			*/
-		} else {
+		if (!meshcore_config.client->connected) {
 			safe_sleep(1);
 		}
 	}

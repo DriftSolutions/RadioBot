@@ -20,9 +20,6 @@
     <ClCompile Include="meshcore_userdb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue.cpp">
       <Filter>univalue</Filter>
     </ClCompile>
@@ -34,6 +31,9 @@
     </ClCompile>
     <ClCompile Include="driftmeshcore\deps\univalue\lib\univalue_write.cpp">
       <Filter>univalue</Filter>
+    </ClCompile>
+    <ClCompile Include="driftmeshcore\libmeshcoremqttclient\meshcoremqttclient.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
