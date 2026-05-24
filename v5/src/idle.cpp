@@ -231,6 +231,7 @@ THREADTYPE IdleThread(VOID *lpData) {
 					}
 				}
 			}
+			last_user_backup = time(NULL);
 		}
 
 		if ((time(NULL) - last_seed) >= 86400) {
