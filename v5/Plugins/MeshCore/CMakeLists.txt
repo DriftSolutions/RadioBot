@@ -1,7 +1,7 @@
 SET(THISPLUG MeshCore)
 
 pkg_search_module(LIBMOSQ OPTIONAL libmosquitto)
-IF(DEFINED LIBMOSQ_FOUND)
+IF(LIBMOSQ_FOUND)
         message(STATUS "Found libmosquitto package, MeshCore plugin enabled...")
         include_directories(${LIBMOSQ_INCLUDE_DIRS})
         link_directories(${LIBMOSQ_LIBRARY_DIRS})
@@ -25,6 +25,6 @@ IF(DEFINED LIBMOSQ_FOUND)
 	SET(PLUGLIBS ${LIBMOSQ_LIBRARIES} ${LIBUNIVALUE_LIBRARIES})
 	include(../plugin_post_common.txt)
 
-ELSE(DEFINED LIBMOSQ_FOUND)
+ELSE(LIBMOSQ_FOUND)
         message(STATUS "Could not find libmosquitto, skipping MeshCore plugin...")
-ENDIF(DEFINED LIBMOSQ_FOUND)
+ENDIF(LIBMOSQ_FOUND)
