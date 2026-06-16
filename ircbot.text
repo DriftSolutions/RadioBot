@@ -1,0 +1,156 @@
+// RadioBot default ircbot.text
+// Variables: %song %dj %olddj %djnick% %djuser% %nick %chan %req %request
+//            %clients %peak %max %uptime %version %rating% %votes% %ratings%
+//            %bold %color %under% %italic%
+
+// ---- Song / stream status ----
+Song = Now playing: %bold%song%bold
+SongPost = Listeners: %clients/%max  Peak: %peak
+RadioOn = Radio is now ONLINE! Now playing: %bold%song%bold
+RadioOff = Radio is now OFFLINE.
+DJNew = %bold%dj%bold has started streaming!
+DJChange = DJ change: %bold%dj%bold is now on air (was: %olddj)
+TopicOnline = Now Playing: %song | Listeners: %clients/%max | DJ: %dj
+TopicOffline = Radio is currently offline.
+TopicDjChange = Now Playing: %song | DJ: %dj | Listeners: %clients/%max
+DedToChans = %bold%nick%bold dedicated this song to the channel!
+
+// ---- Requests ----
+ReqLoggedIn = %bold%nick%bold: You are now logged in for requests.
+ReqThanks = %bold%nick%bold: Thanks for your request! I'll try to play it soon.
+ReqToChans = %bold%nick%bold requested: %bold%request%bold
+RequestFromChan = Request received from %chan: %request
+RequestFromNick = Request received from %nick: %request
+ReqNoDJ = Sorry, there is no DJ available to take requests right now.
+ReqDJNoRequests = Sorry, the DJ is not accepting requests at this time.
+ReqFallback = %bold%nick%bold: Your request has been noted.
+AutoDJ_ReqToChans = %bold%nick%bold requested: %bold%request%bold (AutoDJ)
+FindDisabled = Sorry, the song finder is currently disabled.
+FindNoSource = Sorry, I could not find that song.
+
+// ---- Ratings ----
+Rating = %bold%nick%bold: Song rated %rating%/10 (%votes% votes)
+
+// ---- Playlists ----
+PlaylistMSG0 = Playlist requests are currently OFF.
+PlaylistMSG1 = Playlist requests are currently ON.
+
+// ---- Welcome plugin ----
+WelcomeOnJoin = Welcome to %chan, %nick! Now playing: %bold%song%bold
+
+// ---- Ping ----
+PingUser = %bold%nick%bold: Pong!
+PingTimeout = %bold%nick%bold has timed out.
+OnJoin = %nick has joined %chan. Now playing: %bold%song%bold
+OnKickSource = Kicked from source.
+
+// ---- Forum plugin ----
+ForumOnline = Forum is now online.
+ForumOffline = Forum is now offline.
+
+// ---- Gaming plugin ----
+GameOnline = Game server is now online.
+GameOffline = Game server is now offline.
+
+// ---- Trivia plugin ----
+TriviaQuestion = Trivia: %bold%question%bold
+TriviaCorrect = %bold%nick%bold got it right! The answer was: %bold%answer%bold (+%points% pts, total: %score%)
+TriviaCorrectStreak = %bold%nick%bold is on a %streak% answer streak!
+TriviaHint = Hint: %hint
+TriviaScore = %bold%nick%bold's trivia score: %score% pts
+TriviaScores = Top scores:
+TriviaScoresMid = %rank%. %bold%nick%bold - %score% pts
+TriviaScoresEnd = End of scores.
+TriviaScoresOver = No scores yet.
+TriviaTimeout = Time's up! The answer was: %bold%answer%bold
+TriviaAnnounce = Trivia starting in %secs% seconds!
+TriviaNextQTime = Next question in %secs% seconds.
+TriviaOver = Trivia game over! Winner: %bold%nick%bold with %score% pts
+TriviaHistoryNone = No trivia history yet.
+TriviaHistoryBegin = Trivia history:
+TriviaHistoryBegin2 = Trivia history (page %page%):
+TriviaHistoryScore = %rank%. %bold%nick%bold - %score% pts
+TriviaHistoryEnd = End of history.
+
+// ---- Hangman plugin ----
+HangmanStart = Hangman: Guess the word! %display (%letters% letters)
+HangmanNewWord = New word: %display (%letters% letters)
+HangmanMatch = %bold%nick%bold guessed a letter: %letter (%display)
+HangmanNoMatch = %bold%nick%bold: No match for '%letter'.
+HangmanAlreadyTried = %bold%nick%bold: You already tried '%letter'.
+HangmanWonGame = %bold%nick%bold won! The word was: %bold%word%bold (+%points% pts)
+HangmanLostGame = Game over! The word was: %bold%word%bold
+HangmanStatus = Word: %display | Tried: %tried | Wrong: %wrong/%max
+HangmanShowHand = Letters tried: %tried
+HangmanTimeout = Time's up! The word was: %bold%word%bold
+HangmanScore = %bold%nick%bold's hangman score: %score% pts
+HangmanScores = Top hangman scores:
+HangmanScoresEnd = End of scores.
+HangmanCardNotAllowed = %bold%nick%bold: That's not allowed right now.
+HangmanHistoryNone = No hangman history yet.
+HangmanHistoryBegin = Hangman history:
+HangmanHistoryScore = %rank%. %bold%nick%bold - %score% pts
+HangmanHistoryEnd = End of history.
+HangmanOver = Hangman game over!
+
+// ---- Uno plugin ----
+UnoStart = Uno game starting! Type !uno to join. %secs% seconds to join.
+UnoStart2 = Uno game starting with %players% players!
+UnoAnnounce = Uno game in progress! %players% players.
+UnoNewDeal = New hand dealt.
+UnoTurnStart = %bold%nick%bold's turn. Top card: %card. Hand: %hand
+UnoPlayedCard = %bold%nick%bold played %card.
+UnoPlayedCardWild = %bold%nick%bold played %card and chose %color.
+UnoDraw = %bold%nick%bold draws %num% card(s).
+UnoDrawCards = %bold%nick%bold must draw %num% card(s)!
+UnoDrawPlayer = %bold%nick%bold drew: %card
+UnoPass = %bold%nick%bold passes.
+UnoSkipTurn = %bold%nick%bold is skipped!
+UnoGiveCard = %bold%nick%bold gives a card to %target.
+UnoUno = %bold%nick%bold has UNO!
+UnoWonHand = %bold%nick%bold won this hand! (+%points% pts)
+UnoWonGame = %bold%nick%bold wins the game with %score% pts!
+UnoOver = Uno game over! Winner: %bold%nick%bold
+UnoShowHand = Your hand: %hand
+UnoShowTopCard = Top card: %card
+UnoScore = %bold%nick%bold's Uno score: %score% pts
+UnoScores = Top Uno scores:
+UnoScoresEnd = End of scores.
+UnoColorError = %bold%nick%bold: Please specify a color (red/blue/green/yellow).
+UnoCardNotInHand = %bold%nick%bold: You don't have that card.
+UnoCardNotAllowed = %bold%nick%bold: You can't play that card right now.
+UnoOnlyDrawnCard = %bold%nick%bold: You can only play the card you just drew.
+UnoTimeout = Uno turn timed out for %bold%nick%bold.
+UnoHistoryNone = No Uno history yet.
+UnoHistoryBegin = Uno history:
+UnoHistoryBegin2 = Uno history (page %page%):
+UnoHistoryScore = %rank%. %bold%nick%bold - %score% pts
+UnoHistoryEnd = End of history.
+
+// ---- MeshCore plugin ----
+MeshCoreSong = [MeshCore] Now playing: %bold%song%bold
+MeshCoreDJNew = [MeshCore] %bold%dj%bold has started streaming!
+MeshCoreDJChange = [MeshCore] DJ change: %bold%dj%bold
+MeshCoreRequest = [MeshCore] %bold%nick%bold requested: %bold%request%bold
+MeshCoreSongSource = [MeshCore] Source: %source
+
+// ---- SAM plugin ----
+SAM_ShowQueue = Queue: %queue
+SAM_EmptyQueue = The queue is empty.
+
+// ---- Vote Next plugin ----
+VoteNextThanks = %bold%nick%bold: Your vote to skip has been counted (%votes%/%needed%).
+VoteNextAlreadyVoted = %bold%nick%bold: You have already voted.
+VoteNextPassed = Vote passed! Skipping to next song.
+VoteNextNoSrc = No audio source active to vote on.
+
+// ---- Twitter/social plugins ----
+TwitterSong = Now playing: %song
+TwitterDJNew = %dj is now streaming!
+TwitterDJChange = DJ change: %dj is now on air
+TwitterRequest = %nick requested: %request
+TwitterSongSource = Source: %source
+
+// ---- Mumble / TeamSpeak ----
+MumbleComment = Now Playing: %song
+TS3Comment = Now Playing: %song
