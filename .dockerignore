@@ -1,0 +1,41 @@
+# Build artifacts
+build/
+*/Output/
+*.o
+*.a
+*.so
+*.dylib
+
+# Version control
+.git/
+
+# Editor / OS artifacts
+*.bak
+.vs/
+*.log
+
+# Windows artifacts
+*.exe
+*.dll
+*.pem
+*.lib
+
+# Generated proto files
+*.pb.cc
+*.pb.h
+distro.h
+distro.sh
+
+# DSL source (fetched at cmake time)
+Common/DSL/dslsrc/
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+data/
+demo-*.tape
+demo-whiptail.gif
+demo-*.gif
+demo-reset.sh
