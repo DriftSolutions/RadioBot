@@ -49,3 +49,6 @@ remote_protobuf.pb.h
 Mumble.pb.cc
 Mumble.pb.h
 
+# Local-only Docker Compose overrides (e.g. local DNS for testing)
+docker-compose.override.yml
+

@@ -1,0 +1,39 @@
+services:
+  radiobot:
+    build: .
+    container_name: radiobot
+    restart: unless-stopped
+    # The image defaults to a baked-in non-root user (UID/GID 1000). This
+    # override matches the container's user to your actual host UID/GID, so
+    # files written to the bind-mounted ./data (config, database, logs) are
+    # owned by you instead of a mismatched 1000:1000. Bash doesn't export
+    # GID automatically, so run this once per shell before `docker compose
+    # up`/`run` (or put it in your shell rc file):
+    #   export UID GID=$(id -g)
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./data:/radiobot/data
+    networks:
+      - radiobot-net
+    # Uncomment if the Telnet plugin is enabled (default port 4000)
+    # ports:
+    #   - "4000:4000"
+    #
+    # First-time setup:
+    #   docker compose run --rm radiobot
+    #
+    # The setup wizard runs automatically when ./data/ircbot.conf is missing.
+    # After setup, start normally with:
+    #   docker compose up -d
+    #
+    # Running with plain `docker run` instead of compose? The `user:` field
+    # above won't apply, so the container falls back to the image's baked-in
+    # UID/GID 1000 and you may hit the same ownership mismatch. Either use
+    # docker compose (recommended), or mirror this behavior by adding
+    # `--user "$(id -u):$(id -g)"` to your `docker run` command.
+
+networks:
+  radiobot-net:
+    name: radiobot-net
+    # To use an existing external Docker network instead, replace the above with:
+    # external: true

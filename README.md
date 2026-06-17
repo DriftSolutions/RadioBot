@@ -2,6 +2,34 @@
 Since I no longer have a lot of time to put into RadioBot I thought I would go ahead and release the source code so others can check it out and customize it to their needs.
 I'll be the first to admit it's kind of a mess in places, the bot was originally in C before moving to C++ and is basically what I learned C/C++ on so it's not perfect.
 
+## Running with Docker
+The easiest way to get RadioBot running is via Docker Compose — no manual dependency installation required, everything is built inside the container. From the cloned repo:
+
+```bash
+docker compose up -d --build
+```
+
+On first run (or whenever `./data/ircbot.conf` is missing), an interactive setup wizard walks you through configuring your bot's nickname, IRC server, streaming server, and plugins:
+
+```bash
+docker compose run --rm radiobot
+```
+
+![RadioBot setup wizard](demo-whiptail.gif)
+
+The wizard writes `./data/ircbot.conf`, which you can edit directly afterward — restart with `docker compose restart` to pick up changes. Once configured, start the bot normally:
+
+```bash
+docker compose up -d
+```
+
+By default the container runs as a non-root user (UID/GID 1000). To make files written to `./data` (config, database, logs) match your own host user instead, export `UID`/`GID` before running compose — bash doesn't export `GID` automatically, so:
+
+```bash
+export UID GID=$(id -g)
+docker compose up -d
+```
+
 ## Compiling on Windows
 In the IRCBot folder, load IRCBot.sln. A Windows build is going to be harder just because there are so many dependencies if you want to build everything. I have (and the solution is set up for) a folder c:\deps with a lib and include folder and I keep all my deps in it like on a Linux directory structure. The core things you will need: 
  
